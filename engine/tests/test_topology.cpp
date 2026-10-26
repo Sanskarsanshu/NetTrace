@@ -435,6 +435,170 @@ TEST_CASE("T-2-13: Validation rules 1..12 with passing and failing fixtures") {
         auto rep17 = validate(d17);
         REQUIRE(hasIssueWithCode(rep17, "LIMIT_EXCEEDED"));
     }
+
+    // Rule M2-13: Duplicate interface IP addresses in the same broadcast domain
+    {
+        // Failing fixture: host-b given same IP as host-a in the same switch domain
+        auto d = makeG1();
+        d.nodes[2].interfaces[0].ipv4 = IPv4Subnet::parse("192.168.1.10/24").value();
+        auto rep = validate(d);
+        REQUIRE(hasIssueWithCode(rep, "DUPLICATE_IP_IN_DOMAIN"));
+
+        // Passing fixture: host-b has different IP 192.168.1.20 in G1
+        auto dPass = makeG1();
+        auto repPass = validate(dPass);
+        REQUIRE(!hasIssueWithCode(repPass, "DUPLICATE_IP_IN_DOMAIN"));
+
+        // Passing fixture: identical IP on two hosts in DIFFERENT broadcast domains (behind router)
+        TopologyDraft dMultiDomain;
+        Node h1; h1.id = NodeId("h1"); h1.type = NodeType::Host;
+        Interface ifH1; ifH1.id = InterfaceId("eth0"); ifH1.mac = MacAddress::parse("02:00:00:01:00:01").value();
+        ifH1.ipv4 = IPv4Subnet::parse("192.168.1.10/24").value();
+        h1.interfaces.push_back(ifH1);
+
+        Node r; r.id = NodeId("r1"); r.type = NodeType::Router;
+        Interface ifR0; ifR0.id = InterfaceId("eth0"); ifR0.mac = MacAddress::parse("02:00:00:02:00:01").value();
+        ifR0.ipv4 = IPv4Subnet::parse("192.168.1.1/24").value();
+        Interface ifR1; ifR1.id = InterfaceId("eth1"); ifR1.mac = MacAddress::parse("02:00:00:02:00:02").value();
+        ifR1.ipv4 = IPv4Subnet::parse("10.0.0.1/24").value();
+        r.interfaces.push_back(ifR0);
+        r.interfaces.push_back(ifR1);
+
+        Node h2; h2.id = NodeId("h2"); h2.type = NodeType::Host;
+        Interface ifH2; ifH2.id = InterfaceId("eth0"); ifH2.mac = MacAddress::parse("02:00:00:03:00:01").value();
+        // Same IP 192.168.1.10, but in a completely different domain!
+        ifH2.ipv4 = IPv4Subnet::parse("192.168.1.10/24").value();
+        h2.interfaces.push_back(ifH2);
+
+        Link link1; link1.id = LinkId("l1"); link1.a = {NodeId("h1"), InterfaceId("eth0")}; link1.b = {NodeId("r1"), InterfaceId("eth0")};
+        Link link2; link2.id = LinkId("l2"); link2.a = {NodeId("h2"), InterfaceId("eth0")}; link2.b = {NodeId("r1"), InterfaceId("eth1")};
+        // Note: link2 has subnet mismatch if both have IP, so make ifR1 192.168.1.1/24 for link2
+        ifR1.ipv4 = IPv4Subnet::parse("192.168.1.1/24").value();
+        r.interfaces[1] = ifR1;
+
+        dMultiDomain.nodes = {h1, r, h2};
+        dMultiDomain.links = {link1, link2};
+        auto repMulti = validate(dMultiDomain);
+        // Duplicate IP across different domains must NOT produce DUPLICATE_IP_IN_DOMAIN
+        REQUIRE(!hasIssueWithCode(repMulti, "DUPLICATE_IP_IN_DOMAIN"));
+    }
+
+    // Rule M2-16: Direct link subnet mismatch
+    {
+        // Failing fixture: direct link between two routed interfaces in different subnets
+        TopologyDraft d;
+        Node hA; hA.id = NodeId("h-a"); hA.type = NodeType::Host;
+        Interface ifA; ifA.id = InterfaceId("eth0"); ifA.mac = MacAddress::parse("02:00:00:01:00:01").value();
+        ifA.ipv4 = IPv4Subnet::parse("192.168.1.10/24").value();
+        hA.interfaces.push_back(ifA);
+
+        Node hB; hB.id = NodeId("h-b"); hB.type = NodeType::Host;
+        Interface ifB; ifB.id = InterfaceId("eth0"); ifB.mac = MacAddress::parse("02:00:00:02:00:01").value();
+        ifB.ipv4 = IPv4Subnet::parse("10.0.0.20/24").value(); // Different subnet!
+        hB.interfaces.push_back(ifB);
+
+        Link l; l.id = LinkId("l1"); l.a = {NodeId("h-a"), InterfaceId("eth0")}; l.b = {NodeId("h-b"), InterfaceId("eth0")};
+        d.nodes = {hA, hB};
+        d.links = {l};
+
+        auto rep = validate(d);
+        REQUIRE(hasIssueWithCode(rep, "SUBNET_MISMATCH"));
+
+        // Passing fixture: direct link between two routed interfaces in the SAME subnet
+        d.nodes[1].interfaces[0].ipv4 = IPv4Subnet::parse("192.168.1.20/24").value();
+        auto repClean = validate(d);
+        REQUIRE(!hasIssueWithCode(repClean, "SUBNET_MISMATCH"));
+    }
+
+    // Rule M2-20: Inactive component reporting (warning)
+    {
+        // Inactive node
+        auto dNodeDown = makeG1();
+        dNodeDown.nodes[0].adminState = AdminState::Down;
+        auto repNode = validate(dNodeDown);
+        REQUIRE(hasIssueWithCode(repNode, "INACTIVE_COMPONENT"));
+
+        // Inactive interface
+        auto dIfaceDown = makeG1();
+        dIfaceDown.nodes[0].interfaces[0].adminState = AdminState::Down;
+        auto repIface = validate(dIfaceDown);
+        REQUIRE(hasIssueWithCode(repIface, "INACTIVE_COMPONENT"));
+
+        // Inactive link
+        auto dLinkDown = makeG1();
+        dLinkDown.links[0].adminState = AdminState::Down;
+        auto repLink = validate(dLinkDown);
+        REQUIRE(hasIssueWithCode(repLink, "INACTIVE_COMPONENT"));
+
+        // Passing fixture: G1 baseline has 0 inactive components
+        auto dUp = makeG1();
+        auto repUp = validate(dUp);
+        REQUIRE(!hasIssueWithCode(repUp, "INACTIVE_COMPONENT"));
+    }
+
+    // Rule M2-22: Disconnected topology check (warning)
+    {
+        // Warning fixture: two separate clusters
+        // Cluster 1: h1 <-> sw1
+        // Cluster 2: h2 <-> sw2
+        TopologyDraft d;
+        Node h1; h1.id = NodeId("h1"); h1.type = NodeType::Host;
+        Interface if1; if1.id = InterfaceId("eth0"); if1.mac = MacAddress::parse("02:00:00:01:00:01").value();
+        if1.ipv4 = IPv4Subnet::parse("192.168.1.10/24").value();
+        h1.interfaces.push_back(if1);
+
+        Node sw1; sw1.id = NodeId("sw1"); sw1.type = NodeType::Switch;
+        Interface p1; p1.id = InterfaceId("p1"); sw1.interfaces.push_back(p1);
+
+        Node h2; h2.id = NodeId("h2"); h2.type = NodeType::Host;
+        Interface if2; if2.id = InterfaceId("eth0"); if2.mac = MacAddress::parse("02:00:00:02:00:01").value();
+        if2.ipv4 = IPv4Subnet::parse("10.0.0.10/24").value();
+        h2.interfaces.push_back(if2);
+
+        Node sw2; sw2.id = NodeId("sw2"); sw2.type = NodeType::Switch;
+        Interface p2; p2.id = InterfaceId("p2"); sw2.interfaces.push_back(p2);
+
+        Link l1; l1.id = LinkId("l1"); l1.a = {NodeId("h1"), InterfaceId("eth0")}; l1.b = {NodeId("sw1"), InterfaceId("p1")};
+        Link l2; l2.id = LinkId("l2"); l2.a = {NodeId("h2"), InterfaceId("eth0")}; l2.b = {NodeId("sw2"), InterfaceId("p2")};
+
+        d.nodes = {h1, sw1, h2, sw2};
+        d.links = {l1, l2};
+
+        auto rep = validate(d);
+        REQUIRE(hasIssueWithCode(rep, "DISCONNECTED_TOPOLOGY"));
+
+        // Passing fixture: G1 baseline is a connected graph
+        auto dG1 = makeG1();
+        auto repG1 = validate(dG1);
+        REQUIRE(!hasIssueWithCode(repG1, "DISCONNECTED_TOPOLOGY"));
+    }
+
+    // Rule M2-23: L2 loop detected among switches (warning)
+    {
+        // Warning fixture: two switches connected with two parallel links
+        TopologyDraft d;
+        Node sw1; sw1.id = NodeId("sw1"); sw1.type = NodeType::Switch;
+        Interface p1; p1.id = InterfaceId("p1"); sw1.interfaces.push_back(p1);
+        Interface p2; p2.id = InterfaceId("p2"); sw1.interfaces.push_back(p2);
+
+        Node sw2; sw2.id = NodeId("sw2"); sw2.type = NodeType::Switch;
+        Interface q1; q1.id = InterfaceId("p1"); sw2.interfaces.push_back(q1);
+        Interface q2; q2.id = InterfaceId("p2"); sw2.interfaces.push_back(q2);
+
+        Link l1; l1.id = LinkId("l1"); l1.a = {NodeId("sw1"), InterfaceId("p1")}; l1.b = {NodeId("sw2"), InterfaceId("p1")};
+        Link l2; l2.id = LinkId("l2"); l2.a = {NodeId("sw1"), InterfaceId("p2")}; l2.b = {NodeId("sw2"), InterfaceId("p2")};
+
+        d.nodes = {sw1, sw2};
+        d.links = {l1, l2};
+
+        auto rep = validate(d);
+        REQUIRE(hasIssueWithCode(rep, "L2_LOOP_DETECTED"));
+
+        // Passing fixture: G1 baseline with single switch
+        auto dG1 = makeG1();
+        auto repG1 = validate(dG1);
+        REQUIRE(!hasIssueWithCode(repG1, "L2_LOOP_DETECTED"));
+    }
 }
 
 TEST_CASE("T-2-17: MAC unique across the whole topology") {

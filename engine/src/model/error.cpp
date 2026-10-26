@@ -49,6 +49,10 @@ std::string_view errorCodeToString(ErrorCode code) {
         case ErrorCode::EmptyTopology: return "EMPTY_TOPOLOGY";
         case ErrorCode::OverlappingSubnets: return "OVERLAPPING_SUBNETS";
         case ErrorCode::RouterSingleInterface: return "ROUTER_SINGLE_INTERFACE";
+        case ErrorCode::SubnetMismatch: return "SUBNET_MISMATCH";
+        case ErrorCode::InactiveComponent: return "INACTIVE_COMPONENT";
+        case ErrorCode::DisconnectedTopology: return "DISCONNECTED_TOPOLOGY";
+        case ErrorCode::L2LoopDetected: return "L2_LOOP_DETECTED";
         case ErrorCode::LinkDown: return "LINK_DOWN";
         case ErrorCode::TtlExpired: return "TTL_EXPIRED";
         case ErrorCode::MtuExceeded: return "MTU_EXCEEDED";

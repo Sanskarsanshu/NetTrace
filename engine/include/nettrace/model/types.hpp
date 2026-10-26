@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdint>
 #include <functional>
+#include <ostream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -77,6 +78,11 @@ struct PacketId {
     bool empty() const { return value.empty(); }
     const std::string& str() const { return value; }
 };
+
+inline std::ostream& operator<<(std::ostream& os, const NodeId& id) { return os << id.str(); }
+inline std::ostream& operator<<(std::ostream& os, const InterfaceId& id) { return os << id.str(); }
+inline std::ostream& operator<<(std::ostream& os, const LinkId& id) { return os << id.str(); }
+inline std::ostream& operator<<(std::ostream& os, const PacketId& id) { return os << id.str(); }
 
 // Canonical unit types
 using BandwidthBps = uint64_t;

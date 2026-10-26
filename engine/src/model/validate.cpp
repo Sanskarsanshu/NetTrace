@@ -1,4 +1,5 @@
 #include "nettrace/model/validate.hpp"
+#include "nettrace/model/broadcast_domain.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -139,6 +140,11 @@ ValidationReport validate(const TopologyDraft& draft, const ValidationOptions& o
             report.addError("INVALID_NAME", nodePath + "/name", "Node name exceeds 64 chars or contains control characters");
         }
 
+        // Rule M2-20: Inactive node
+        if (node.adminState == AdminState::Down) {
+            report.addWarning("INACTIVE_COMPONENT", nodePath, "Node '" + node.id.str() + "' is administratively down");
+        }
+
         // Rule 2: Duplicate Node ID
         if (!seenNodeIds.insert(node.id.str()).second) {
             report.addError("DUPLICATE_NODE_ID", nodePath, "Duplicate node ID: '" + node.id.str() + "'");
@@ -197,6 +203,12 @@ ValidationReport validate(const TopologyDraft& draft, const ValidationOptions& o
             if (!isValidName(iface.name)) {
                 report.addError("INVALID_NAME", ifacePath + "/name",
                     "Interface name exceeds 64 chars or contains control characters");
+            }
+
+            // Rule M2-20: Inactive interface
+            if (iface.adminState == AdminState::Down) {
+                report.addWarning("INACTIVE_COMPONENT", ifacePath,
+                    "Interface '" + iface.id.str() + "' on node '" + node.id.str() + "' is administratively down");
             }
 
             // Rule 2: Duplicate Interface ID on same node
@@ -308,6 +320,11 @@ ValidationReport validate(const TopologyDraft& draft, const ValidationOptions& o
             report.addError("INVALID_ID", linkPath, "Link ID '" + link.id.str() + "' must be 1..64 chars from [A-Za-z0-9_.-]");
         }
 
+        // Rule M2-20: Inactive link
+        if (link.adminState == AdminState::Down) {
+            report.addWarning("INACTIVE_COMPONENT", linkPath, "Link '" + link.id.str() + "' is administratively down");
+        }
+
         // Rule 2: Duplicate Link ID
         if (!seenLinkIds.insert(link.id.str()).second) {
             report.addError("DUPLICATE_LINK_ID", linkPath, "Duplicate link ID: '" + link.id.str() + "'");
@@ -389,6 +406,101 @@ ValidationReport validate(const TopologyDraft& draft, const ValidationOptions& o
             report.addError("INVALID_MTU", linkPath + "/mtuBytes",
                 "Link MTU " + std::to_string(link.mtuBytes) + " must be in range 68..65535");
         }
+
+        // Rule M2-16: Direct link subnet mismatch (two routed interfaces on one link in different subnets)
+        if (itA != nodeMap.end() && itB != nodeMap.end()) {
+            const auto* ifaceA = itA->second->findInterface(link.a.interfaceId);
+            const auto* ifaceB = itB->second->findInterface(link.b.interfaceId);
+            if (ifaceA && ifaceB && ifaceA->ipv4.has_value() && ifaceB->ipv4.has_value()) {
+                const auto& subA = *ifaceA->ipv4;
+                const auto& subB = *ifaceB->ipv4;
+                if (subA.prefixLength() != subB.prefixLength() ||
+                    subA.network() != subB.network() ||
+                    !subA.contains(subB.address()) ||
+                    !subB.contains(subA.address())) {
+                    report.addError("SUBNET_MISMATCH", linkPath,
+                        "Subnet mismatch on link '" + link.id.str() + "': " +
+                        link.a.nodeId.str() + "." + link.a.interfaceId.str() + " (" + subA.toString() + ") and " +
+                        link.b.nodeId.str() + "." + link.b.interfaceId.str() + " (" + subB.toString() + ")",
+                        "Directly linked routed interfaces must belong to the same subnet");
+                }
+            }
+        }
+    }
+
+    // Rule M2-13 / M2-46: Duplicate interface IP addresses in the same broadcast domain
+    auto domains = computeBroadcastDomains(draft);
+    for (const auto& domain : domains) {
+        std::map<IPv4Address, InterfaceRef> domainIps;
+        for (const auto& ref : domain.interfaces) {
+            auto itNode = nodeMap.find(ref.nodeId.str());
+            if (itNode == nodeMap.end()) continue;
+            const auto* iface = itNode->second->findInterface(ref.interfaceId);
+            if (!iface || !iface->ipv4.has_value()) continue;
+
+            IPv4Address ip = iface->ipv4->address();
+            auto ins = domainIps.emplace(ip, ref);
+            if (!ins.second) {
+                report.addError("DUPLICATE_IP_IN_DOMAIN",
+                    "nodes/" + ref.nodeId.str() + "/interfaces/" + ref.interfaceId.str() + "/ipv4",
+                    "Duplicate IP address '" + ip.toString() + "' in broadcast domain '" + domain.id +
+                    "' (shared with " + ins.first->second.nodeId.str() + "." + ins.first->second.interfaceId.str() + ")");
+            }
+        }
+    }
+
+    // Rule M2-22: Disconnected topology (warning)
+    std::vector<std::string> activeNodeIds;
+    std::unordered_map<std::string, int> activeNodeIdx;
+    for (const auto& node : draft.nodes) {
+        if (node.adminState != AdminState::Up) continue;
+        bool hasActiveIface = false;
+        for (const auto& iface : node.interfaces) {
+            if (iface.adminState == AdminState::Up) {
+                hasActiveIface = true;
+                break;
+            }
+        }
+        if (hasActiveIface) {
+            activeNodeIdx[node.id.str()] = static_cast<int>(activeNodeIds.size());
+            activeNodeIds.push_back(node.id.str());
+        }
+    }
+
+    if (activeNodeIds.size() > 1) {
+        std::vector<int> dsu(activeNodeIds.size());
+        for (size_t i = 0; i < dsu.size(); ++i) dsu[i] = static_cast<int>(i);
+        auto findRoot = [&](auto& self, int i) -> int {
+            if (dsu[i] == i) return i;
+            return dsu[i] = self(self, dsu[i]);
+        };
+        for (const auto& link : draft.links) {
+            if (link.adminState != AdminState::Up) continue;
+            auto itA = activeNodeIdx.find(link.a.nodeId.str());
+            auto itB = activeNodeIdx.find(link.b.nodeId.str());
+            if (itA != activeNodeIdx.end() && itB != activeNodeIdx.end()) {
+                int rA = findRoot(findRoot, itA->second);
+                int rB = findRoot(findRoot, itB->second);
+                if (rA != rB) dsu[rA] = rB;
+            }
+        }
+        std::set<int> uniqueRoots;
+        for (size_t i = 0; i < dsu.size(); ++i) {
+            uniqueRoots.insert(findRoot(findRoot, static_cast<int>(i)));
+        }
+        if (uniqueRoots.size() > 1) {
+            report.addWarning("DISCONNECTED_TOPOLOGY", "nodes",
+                "Topology contains " + std::to_string(uniqueRoots.size()) + " disconnected components");
+        }
+    }
+
+    // Rule M2-23: L2 loop detected among switches (warning: STP not modeled)
+    std::vector<NodeId> loopSwitches;
+    if (detectSwitchLoops(draft, &loopSwitches)) {
+        std::string targetNode = loopSwitches.empty() ? "" : loopSwitches.front().str();
+        std::string path = targetNode.empty() ? "nodes" : "nodes/" + targetNode;
+        report.addWarning("L2_LOOP_DETECTED", path,
+            "Layer-2 loop detected among switches; Spanning Tree Protocol (STP) is not modeled");
     }
 
     report.sort();

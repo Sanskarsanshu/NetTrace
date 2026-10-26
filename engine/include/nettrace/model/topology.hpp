@@ -180,6 +180,14 @@ public:
     const Interface* findInterface(const NodeId& nodeId, const InterfaceId& ifaceId) const;
     const Link* findLink(const LinkId& id) const;
 
+    TopologyDraft toDraft() const {
+        TopologyDraft d;
+        d.schemaVersion = schemaVersion_;
+        d.nodes = nodes_;
+        d.links = links_;
+        return d;
+    }
+
 private:
     TopologySnapshot() = default;
 

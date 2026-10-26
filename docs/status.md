@@ -17,12 +17,15 @@
 | Bellman-Ford Negative-Weight Algorithm | implemented | M1 (Negative weights, reachable negative cycle detection, 2-cycle warning) |
 | Widest-Path Bottleneck Bandwidth Algorithm | implemented | M1 (Max-heap bottleneck bandwidth, tie-breaking) |
 | Topology Data Model & Element Validation | implemented | M2-B (TopologyDraft, TopologySnapshot, FNV-1a hash, element validation rules 1..12; T-2-13, T-2-17, T-2-21, T-2-23, T-2-25) |
+| Domain & Network Validation | implemented | M2-C (DUPLICATE_IP_IN_DOMAIN, SUBNET_MISMATCH, INACTIVE_COMPONENT, DISCONNECTED_TOPOLOGY, L2_LOOP_DETECTED; T-2-13) |
+| Broadcast Domains & Address Registry | implemented | M2-D / M2-H (computeBroadcastDomains, AddressRegistry findOwnerInDomain scoped lookup; T-2-18) |
+| Simulated Transparent Learning Bridge | implemented | M2-D (MacTable: learn, move, lookup, flood set excluding ingress/down; STP not modeled; T-2-12) |
+| Per-Node ARP Cache | implemented | M2-H (ArpCache lookup, insert, update, source tag learned/preloaded; T-2-19) |
 | IPv4 Subnetting & CIDR Calculation | implemented | M2-A (Strict parsing, canonical formatting, prefix math, D-15 host validity) |
 | MAC Addressing & Generator | implemented | M2-A (Colon-separated, predicates, deterministic generator D-23; T-2-24) |
 | Local vs. Gateway Subnet Decision | planned | M2 |
 | Longest Prefix Match (LPM) FIB Lookup | planned | M2 |
-| Simulated Transparent Learning Bridge | planned | M2 (STP not modeled) |
-| ARP Neighbor Resolution | planned | M3 (Modeled ARP with per-node caches; aging, retries, gratuitous/proxy ARP = not modeled; abstracted mode supported) |
+| ARP Neighbor Resolution | planned | M3 (Modeled ARP simulation with packet queues; abstracted mode supported) |
 | Transport Layer & UDP Demux | planned | M3 (Ports 1..65535, host services, ICMP Port Unreachable on closed port) |
 | Packet Lifecycle & State Machine | planned | M3 |
 | Router IPv4 TTL Decrement & Boundary Check | planned | M3 |

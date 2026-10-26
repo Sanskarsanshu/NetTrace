@@ -203,24 +203,24 @@ These resolve inconsistencies between the three documents. Record each as a shor
 ### M2-C Topology validation (`model/validate`)
 Each check returns severity (`error` blocks run, `warning` doesn't), a stable code, field path, and a fix hint.
 - [x] M2-12 Duplicate node/interface/link IDs.
-- [ ] M2-13 Duplicate interface IP addresses in the same broadcast domain / globally (choose and document).
+- [x] M2-13 Duplicate interface IP addresses in the same broadcast domain / globally (choose and document).
 - [x] M2-14 Invalid IP/CIDR.
 - [x] M2-15 Link references missing node/interface; interface used by two links.
-- [ ] M2-16 Interface/link subnet mismatch (two routed interfaces on one link in different subnets) → warning/error per rule.
+- [x] M2-16 Interface/link subnet mismatch (two routed interfaces on one link in different subnets) → warning/error per rule.
 - [x] M2-17 Default gateway not on-link via a host interface (`GATEWAY_UNREACHABLE`).
 - [ ] M2-18 Missing default gateway for a remote destination (checked at run time per request).
 - [x] M2-19 Negative cost where unsupported; invalid bandwidth/delay/loss/MTU.
-- [ ] M2-20 Inactive source/destination/interface/router/link.
+- [x] M2-20 Inactive source/destination/interface/router/link.
 - [ ] M2-21 No route to destination (reported as `NO_ROUTE`, distinct from forwarding-time failure).
-- [ ] M2-22 Disconnected topology (warning).
-- [ ] M2-23 L2 loop detected among switches (warning: STP not modeled).
+- [x] M2-22 Disconnected topology (warning).
+- [x] M2-23 L2 loop detected among switches (warning: STP not modeled).
 - [x] M2-24 Empty topology; limits exceeded (`LIMIT_EXCEEDED`).
-- [ ] M2-25 Unusual-but-legal configs produce **warnings**, blocking ones produce **errors**.
+- [x] M2-25 Unusual-but-legal configs produce **warnings**, blocking ones produce **errors**.
 
 ### M2-D Layer-2 domains and switch
-- [ ] M2-26 Compute broadcast domains (connected components over active links, passing through switches only).
-- [ ] M2-27 Neighbor resolution within a domain by IP→interface (abstracted ARP per D-08), emitting resolvable data (event emission in M3).
-- [ ] M2-28 Switch MAC table structure: learn, move, lookup, flood set computation, exclude ingress port, exclude down ports.
+- [x] M2-26 Compute broadcast domains (connected components over active links, passing through switches only).
+- [x] M2-27 Neighbor resolution within a domain by IP→interface (abstracted ARP per D-08), emitting resolvable data (event emission in M3).
+- [x] M2-28 Switch MAC table structure: learn, move, lookup, flood set computation, exclude ingress port, exclude down ports.
 
 ### M2-E Routing/forwarding tables (`forwarding/`)
 - [ ] M2-29 `Route` struct: prefix, nextHop (nullable = connected), outInterface, source (`connected|static|default|policy`), adminPreference, metric, valid flag, stable routeId.
@@ -246,10 +246,10 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 
 ### M2-H ARP & Transport Additions
 - [x] M2-45 Interface MAC required and globally unique (validation `DUPLICATE_MAC`); auto-generate when absent; persist on export.
-- [ ] M2-46 AddressRegistry (read-only, built from topology snapshot); findOwnerInDomain(ip, domainId). Duplicate IP in one broadcast domain -> error `DUPLICATE_IP_IN_DOMAIN`.
-- [ ] M2-47 ArpCache per node: lookup/insert/update, source tag, no timers.
+- [x] M2-46 AddressRegistry (read-only, built from topology snapshot); findOwnerInDomain(ip, domainId). Duplicate IP in one broadcast domain -> error `DUPLICATE_IP_IN_DOMAIN`.
+- [x] M2-47 ArpCache per node: lookup/insert/update, source tag, no timers.
 - [ ] M2-48 NextHopResolution decision: nextHopIp, needsArp, cacheHit, explanation built from structured fields.
-- [ ] M2-49 Abstracted resolver: registry lookup scoped to the sender's domain.
+- [x] M2-49 Abstracted resolver: registry lookup scoped to the sender's domain.
 - [x] M2-50 TransportHeader struct and port validation (1..65535).
 - [x] M2-51 Host services list in the topology model and validation (duplicate protocol+port on one host -> error).
 - [ ] M2-52 Deterministic ephemeral-port allocator (49152..65535, wraps).
@@ -266,14 +266,14 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [ ] T-2-09 Router chooses correct outgoing interface and next hop on all starter topologies.
 - [ ] T-2-10 Router recognizes packet addressed to itself as local.
 - [ ] T-2-11 Down interface/link makes a route unusable.
-- [ ] T-2-12 Switch learn/forward/flood/move logic; never flood to ingress; never flood to down ports.
+- [x] T-2-12 Switch learn/forward/flood/move logic; never flood to ingress; never flood to down ports.
 - [x] T-2-13 Every validation rule M2-12…M2-24 has a failing-fixture test and a passing-fixture test.
 - [ ] T-2-14 GraphBuilder aggregates segment metrics correctly (cost sum, delay sum, bandwidth min, MTU min, loss formula).
 - [ ] T-2-15 Explanations contain the real evidence values for each scenario (assert on structured fields, not only strings).
 - [x] T-2-16 Property tests: valid IPv4 round-trips; network(addr, prefix) contains addr; broadcast ≥ network.
 - [x] T-2-17 MAC unique across the whole topology.
-- [ ] T-2-18 Registry lookup returns the owner inside the domain and NOTHING for an IP in another domain.
-- [ ] T-2-19 ArpCache ops (lookup, insert, update, source tag).
+- [x] T-2-18 Registry lookup returns the owner inside the domain and NOTHING for an IP in another domain.
+- [x] T-2-19 ArpCache ops (lookup, insert, update, source tag).
 - [ ] T-2-20 Next-hop IP is the gateway for a remote destination and the destination for an on-link one.
 - [x] T-2-21 Port validation (0 and 65536 rejected).
 - [ ] T-2-22 Allocator determinism and wraparound.

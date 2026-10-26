@@ -56,7 +56,7 @@ This document tracks all networking rules, architectural constraints, and functi
 | Same-subnet delivery avoids default gateway | NR §4.2, PROJECT §4.1 | `engine/forwarding/host_decision` | T-2-04 | planned |
 | Gateway must be on directly connected subnet | NR §4.3 | `engine/model/validate` | T-2-06 | planned |
 | Longest Prefix Match (LPM) FIB lookup + tie-breaks | NR §6.2 | `engine/forwarding/fib` | T-2-07, T-2-08 | planned |
-| Learning switch MAC table (never touches TTL/IP) | NR §5.2 | `engine/simulation/switch` | T-2-12 | planned |
+| Learning switch MAC table (never touches TTL/IP) | NR §5.2, M2-28 | `engine/model/mac_table` | T-2-12 | implemented |
 | Router rewrites L2 MAC frame per outgoing link | NR §5.3, PROJECT §7.6 | `engine/simulation/router` | T-2-09 | planned |
 | Topology validation (rules 1..12 element-level) | PROJECT §5.4, TASKS M2-12..24 | `engine/model/validate` | T-2-13 | implemented |
 | Topology model, canonical order & FNV-1a hash | TASKS M2-08..11, ADR-0027 | `engine/model/topology` | T-2-25 | implemented |
@@ -97,7 +97,7 @@ This document tracks all networking rules, architectural constraints, and functi
 | Transport: ICMP and ARP carry no ports | NR §8.4, D-22 | `engine/packet/` | M3-44 | planned |
 | MAC: Globally unique mock MAC across topology | NR §5.1, D-23 | `engine/model/validate` | T-2-17 | implemented |
 | MAC: Generator 02:00:NN:NN:II:II determinism | NR §5.1, D-23 | `engine/model/mac` | T-2-24 | implemented |
-| Registry: Scoped domain lookup in AddressRegistry | NR §5.4, D-21 | `engine/model/registry` | T-2-18 | planned |
-| Cache: Per-node ArpCache operations | NR §5.4, D-21 | `engine/model/arp_cache` | T-2-19 | planned |
+| Registry: Scoped domain lookup in AddressRegistry | NR §5.4, D-21 | `engine/model/address_registry` | T-2-18 | implemented |
+| Cache: Per-node ArpCache operations | NR §5.4, D-21 | `engine/model/arp_cache` | T-2-19 | implemented |
 
 

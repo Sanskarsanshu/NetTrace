@@ -53,6 +53,10 @@ enum class ErrorCode {
     EmptyTopology,
     OverlappingSubnets,
     RouterSingleInterface,
+    SubnetMismatch,
+    InactiveComponent,
+    DisconnectedTopology,
+    L2LoopDetected,
     LinkDown,
     TtlExpired,
     MtuExceeded
