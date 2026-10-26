@@ -24,6 +24,8 @@ endif()
 # Core static library
 add_library(nettrace_core STATIC
     src/model/error.cpp
+    src/model/ipv4.cpp
+    src/model/mac.cpp
     src/routing/graph.cpp
     src/routing/dijkstra.cpp
     src/routing/bfs.cpp
@@ -46,6 +48,8 @@ add_executable(nettrace_tests
     tests/test_bellman_ford.cpp
     tests/test_widest_path.cpp
     tests/test_property.cpp
+    tests/test_ipv4.cpp
+    tests/test_mac.cpp
 )
 
 target_include_directories(nettrace_tests PRIVATE
@@ -75,3 +79,8 @@ add_test(NAME T-1-14 COMMAND nettrace_tests "T-1-14")
 add_test(NAME T-1-15 COMMAND nettrace_tests "T-1-15")
 add_test(NAME T-1-16 COMMAND nettrace_tests "T-1-16")
 add_test(NAME T-1-17 COMMAND nettrace_tests "T-1-17")
+add_test(NAME T-2-01 COMMAND nettrace_tests "T-2-01")
+add_test(NAME T-2-02 COMMAND nettrace_tests "T-2-02")
+add_test(NAME T-2-03 COMMAND nettrace_tests "T-2-03")
+add_test(NAME T-2-16 COMMAND nettrace_tests "T-2-16")
+add_test(NAME T-2-MAC COMMAND nettrace_tests "T-2-MAC")

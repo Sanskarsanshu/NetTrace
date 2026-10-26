@@ -19,9 +19,16 @@ std::string_view errorCodeToString(ErrorCode code) {
         case ErrorCode::Unreachable: return "UNREACHABLE";
         case ErrorCode::NoFeasibleRoute: return "NO_FEASIBLE_ROUTE";
         case ErrorCode::SourceEqualsDestination: return "SOURCE_EQUALS_DESTINATION";
-        case ErrorCode::InvalidIpAddress: return "INVALID_IP_ADDRESS";
+        case ErrorCode::InvalidAddress: return "INVALID_ADDRESS";
         case ErrorCode::InvalidPrefix: return "INVALID_PREFIX";
         case ErrorCode::InvalidSubnet: return "INVALID_SUBNET";
+        case ErrorCode::UnsupportedProtocol: return "UNSUPPORTED_PROTOCOL";
+        case ErrorCode::InvalidMac: return "INVALID_MAC";
+        case ErrorCode::DuplicateMac: return "DUPLICATE_MAC";
+        case ErrorCode::DuplicateIpInDomain: return "DUPLICATE_IP_IN_DOMAIN";
+        case ErrorCode::PortUnreachable: return "PORT_UNREACHABLE";
+        case ErrorCode::PortClosed: return "PORT_CLOSED";
+        case ErrorCode::InvalidPort: return "INVALID_PORT";
         case ErrorCode::GatewayNotOnLink: return "GATEWAY_NOT_ON_LINK";
         case ErrorCode::LinkDown: return "LINK_DOWN";
         case ErrorCode::TtlExpired: return "TTL_EXPIRED";

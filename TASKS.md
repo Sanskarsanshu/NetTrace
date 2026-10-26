@@ -186,13 +186,13 @@ These resolve inconsistencies between the three documents. Record each as a shor
 **Goal:** Represent real network structure (interfaces, subnets, gateways, routes, switches) and make correct local-vs-remote and next-hop decisions with explanations. No packet time evolution yet.
 
 ### M2-A IPv4 and MAC (`model/ipv4`, `model/mac`)
-- [ ] M2-01 Strict IPv4 parser: exactly four decimal octets 0–255, no leading garbage, no whitespace tolerance, rejects `01.2.3.4` ambiguity per documented rule, rejects empty/oversized.
-- [ ] M2-02 Canonical formatter; parse→format round-trips.
-- [ ] M2-03 Prefix length validation `0..32`; mask from prefix; network address; broadcast address; host range; `contains(address)`.
-- [ ] M2-04 Host-address validity rules per D-15 (`/31`, `/32`, network/broadcast rejection).
-- [ ] M2-05 On-link test using masks (never "first three octets").
-- [ ] M2-06 IPv6 inputs rejected with a clear `UNSUPPORTED_PROTOCOL`/`INVALID_ADDRESS` message (never parsed as IPv4).
-- [ ] M2-07 MAC type: parse/format (canonical lowercase colon-separated), predicates (isBroadcast, isMulticast, isLocallyAdministered, isValidInterfaceMac), deterministic locally-administered generator (`02:00:NN:NN:II:II`), global topology uniqueness per D-23.
+- [x] M2-01 Strict IPv4 parser: exactly four decimal octets 0–255, no leading garbage, no whitespace tolerance, rejects `01.2.3.4` ambiguity per documented rule, rejects empty/oversized.
+- [x] M2-02 Canonical formatter; parse→format round-trips.
+- [x] M2-03 Prefix length validation `0..32`; mask from prefix; network address; broadcast address; host range; `contains(address)`.
+- [x] M2-04 Host-address validity rules per D-15 (`/31`, `/32`, network/broadcast rejection).
+- [x] M2-05 On-link test using masks (never "first three octets").
+- [x] M2-06 IPv6 inputs rejected with a clear `UNSUPPORTED_PROTOCOL`/`INVALID_ADDRESS` message (never parsed as IPv4).
+- [x] M2-07 MAC type: parse/format (canonical lowercase colon-separated), predicates (isBroadcast, isMulticast, isLocallyAdministered, isValidInterfaceMac), deterministic locally-administered generator (`02:00:NN:NN:II:II`), global topology uniqueness per D-23.
 
 ### M2-B Topology model (`model/topology`)
 - [ ] M2-08 `Node` (host, router, switch, cloudEndpoint), `Interface` (id, name, mac, ipv4/prefix, mtu override, adminState), `Link` per D-02, `Topology` with schema version.
@@ -255,9 +255,9 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [ ] M2-52 Deterministic ephemeral-port allocator (49152..65535, wraps).
 
 ### M2-I Tests
-- [ ] T-2-01 IPv4 parse accepts/rejects table (leading zeros, 256, missing octet, extra octet, empty, whitespace).
-- [ ] T-2-02 Prefix math for `/0 /8 /16 /20 /23 /24 /25 /30 /31 /32`: network, broadcast, mask, contains.
-- [ ] T-2-03 On-link decision correct for `/16`, `/20`, `/23`, `/25` cases (including near-boundary addresses).
+- [x] T-2-01 IPv4 parse accepts/rejects table (leading zeros, 256, missing octet, extra octet, empty, whitespace).
+- [x] T-2-02 Prefix math for `/0 /8 /16 /20 /23 /24 /25 /30 /31 /32`: network, broadcast, mask, contains.
+- [x] T-2-03 On-link decision correct for `/16`, `/20`, `/23`, `/25` cases (including near-boundary addresses).
 - [ ] T-2-04 Host in same subnet does not use gateway.
 - [ ] T-2-05 Host in different subnet uses default gateway; destination IP unchanged in decision.
 - [ ] T-2-06 No gateway + off-link → `NO_ROUTE`; gateway off-subnet → `GATEWAY_UNREACHABLE`.
@@ -270,7 +270,7 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [ ] T-2-13 Every validation rule M2-12…M2-24 has a failing-fixture test and a passing-fixture test.
 - [ ] T-2-14 GraphBuilder aggregates segment metrics correctly (cost sum, delay sum, bandwidth min, MTU min, loss formula).
 - [ ] T-2-15 Explanations contain the real evidence values for each scenario (assert on structured fields, not only strings).
-- [ ] T-2-16 Property tests: valid IPv4 round-trips; network(addr, prefix) contains addr; broadcast ≥ network.
+- [x] T-2-16 Property tests: valid IPv4 round-trips; network(addr, prefix) contains addr; broadcast ≥ network.
 - [ ] T-2-17 MAC unique across the whole topology.
 - [ ] T-2-18 Registry lookup returns the owner inside the domain and NOTHING for an IP in another domain.
 - [ ] T-2-19 ArpCache ops (lookup, insert, update, source tag).

@@ -140,6 +140,21 @@ struct AutoRegister {
         } \
     } while (0)
 
+#define REQUIRE_GE(a, b) \
+    do { \
+        if (!((a) >= (b))) { \
+            std::ostringstream oss; \
+            oss << "REQUIRE_GE failed at " << __FILE__ << ":" << __LINE__ \
+                << " [" << (a) << " < " << (b) << "] (" #a " >= " #b ")"; \
+            throw ::nettrace::test::TestFailure(oss.str()); \
+        } \
+    } while (0)
+
+#define EXPECT_TRUE(expr) REQUIRE(expr)
+#define EXPECT_FALSE(expr) REQUIRE_FALSE(expr)
+#define EXPECT_EQ(a, b) REQUIRE_EQ(a, b)
+#define EXPECT_GE(a, b) REQUIRE_GE(a, b)
+
 #define CHECK(expr) \
     do { \
         if (!(expr)) { \

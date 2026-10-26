@@ -24,7 +24,8 @@ This document tracks all networking rules, architectural constraints, and functi
 | Property: Widest-path bottleneck optimality | TASKS M1-16 | `engine/routing/widest` | T-1-16 | implemented |
 | Graph validation rejects malformed graphs | TASKS M1-17 | `engine/routing/graph` | T-1-17 | implemented |
 | Memory safety under ASan/UBSan | TASKS M1-18 | `engine/` | T-1-18 | pending: runs on Linux CI |
-| IPv4 subnetting & mask-based on-link calculation | NR §4.2 | `engine/model/ipv4` | T-2-01, T-2-02 | planned |
+| IPv4 strict parsing, prefix math & on-link decision | NR §4.2, D-15 | `engine/model/ipv4` | T-2-01, T-2-02, T-2-03, T-2-16 | implemented |
+| MAC address format, predicates & deterministic generator | NR §5.3, D-23 | `engine/model/mac` | T-2-MAC | implemented |
 | Same-subnet delivery avoids default gateway | NR §4.2, PROJECT §4.1 | `engine/forwarding/host_decision` | T-2-03 | planned |
 | Gateway must be on directly connected subnet | NR §4.3 | `engine/model/validate` | T-2-04 | planned |
 | Longest Prefix Match (LPM) FIB lookup + tie-breaks | NR §6.2 | `engine/forwarding/fib` | T-2-05, T-2-06 | planned |
