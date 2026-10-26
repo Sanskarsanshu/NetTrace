@@ -1,0 +1,38 @@
+# Build and compilation artifacts
+build/
+bin/
+obj/
+*.exe
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+.venv/
+env/
+
+# Node & Frontend artifacts
+node_modules/
+dist/
+.vite/
+coverage/
+
+# IDE and OS files
+.vscode/
+.idea/
+.vs/
+Thumbs.db
+Desktop.ini
+*.log

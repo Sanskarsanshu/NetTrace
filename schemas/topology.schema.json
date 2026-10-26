@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://nettrace3d.io/schemas/topology.schema.json",
+  "title": "NetTrace3D Topology",
+  "type": "object",
+  "required": ["schemaVersion", "id", "name", "nodes", "links"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "enum": ["1.0"]
+    },
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "type", "active", "interfaces"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "type": { "type": "string", "enum": ["host", "router", "switch", "cloudEndpoint"] },
+          "active": { "type": "boolean" },
+          "simulated": { "type": "boolean" },
+          "defaultGateway": { "type": ["string", "null"] },
+          "forwardingEnabled": { "type": "boolean" },
+          "processingDelayMs": { "type": "number", "minimum": 0 },
+          "position": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "z": { "type": "number" }
+            }
+          },
+          "interfaces": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "name", "active"],
+              "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "ipv4Address": { "type": ["string", "null"] },
+                "prefixLength": { "type": ["integer", "null"], "minimum": 0, "maximum": 32 },
+                "macAddress": { "type": ["string", "null"] },
+                "active": { "type": "boolean" },
+                "mtuBytes": { "type": "integer", "minimum": 68, "maximum": 65535 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "a", "b", "adminState", "directionality", "cost", "bandwidthBps", "propagationDelayMs", "packetLossProbability", "mtuBytes"],
+        "properties": {
+          "id": { "type": "string" },
+          "a": {
+            "type": "object",
+            "required": ["nodeId", "interfaceId"],
+            "properties": {
+              "nodeId": { "type": "string" },
+              "interfaceId": { "type": "string" }
+            }
+          },
+          "b": {
+            "type": "object",
+            "required": ["nodeId", "interfaceId"],
+            "properties": {
+              "nodeId": { "type": "string" },
+              "interfaceId": { "type": "string" }
+            }
+          },
+          "adminState": { "type": "string", "enum": ["up", "down"] },
+          "directionality": { "type": "string", "enum": ["bidirectional", "directed"] },
+          "cost": { "type": "number" },
+          "bandwidthBps": { "type": "integer", "minimum": 1 },
+          "availableBandwidthBps": { "type": ["integer", "null"] },
+          "propagationDelayMs": { "type": "number", "minimum": 0 },
+          "packetLossProbability": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "mtuBytes": { "type": "integer", "minimum": 68, "maximum": 65535 }
+        }
+      }
+    }
+  }
+}
