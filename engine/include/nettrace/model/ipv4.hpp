@@ -136,6 +136,12 @@ std::ostream& operator<<(std::ostream& os, const IPv4Subnet& subnet);
  */
 bool isOnLink(const IPv4Address& hostAddr, uint8_t prefixLen, const IPv4Address& destAddr);
 
+/**
+ * @brief Returns the first and last usable host addresses in the subnet given an address and prefix length.
+ * Validates prefix length 0..32, returning an error for invalid prefixes.
+ */
+Result<std::pair<IPv4Address, IPv4Address>> usableHostRange(const IPv4Address& address, uint8_t prefix);
+
 } // namespace nettrace
 
 namespace std {

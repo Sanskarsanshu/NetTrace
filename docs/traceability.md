@@ -25,7 +25,27 @@ This document tracks all networking rules, architectural constraints, and functi
 | T-1-15 | BFS hop optimality property | `engine/tests/test_graph.cpp` | passed |
 | T-1-16 | Widest-path bottleneck optimality property | `engine/tests/test_graph.cpp` | passed |
 | T-1-17 | Graph validation rejects malformed graphs | `engine/tests/test_graph.cpp` | passed |
-| T-1-18 | Memory safety under ASan and UBSan | `engine/` | passed (Linux CI) |
+| T-1-18 | Memory safety under ASan and UBSan | `engine/` | passed (Linux CI run 40385595609) |
+
+---
+
+## Milestone 2 Test Execution Mapping
+
+| Test ID | Test Name | File | Status |
+|---|---|---|---|
+| T-2-01 | IPv4 strict parse accepts/rejects table | `engine/tests/test_ipv4.cpp` | passed |
+| T-2-02 | Prefix math and usableHostRange | `engine/tests/test_ipv4.cpp` | passed |
+| T-2-03 | On-link decision table | `engine/tests/test_ipv4.cpp` | passed |
+| T-2-12 | Switch MAC table learn/forward/flood/move | `engine/tests/test_switch_mac_table.cpp` | passed |
+| T-2-13 | Validation rules 1..12 + mixed subnets in domain | `engine/tests/test_topology.cpp` | passed |
+| T-2-16 | IPv4 property tests | `engine/tests/test_property.cpp` | passed |
+| T-2-17 | MAC globally unique across topology | `engine/tests/test_topology.cpp` | passed |
+| T-2-18 | AddressRegistry domain-scoped lookup | `engine/tests/test_address_registry.cpp` | passed |
+| T-2-19 | ArpCache operations & source tags | `engine/tests/test_arp_cache.cpp` | passed |
+| T-2-21 | Port validation 1..65535 | `engine/tests/test_topology.cpp` | passed |
+| T-2-23 | Duplicate service rejection | `engine/tests/test_topology.cpp` | passed |
+| T-2-24 | MAC parser, predicates & generator | `engine/tests/test_mac.cpp` | passed |
+| T-2-25 | Topology snapshot, canonical order & FNV-1a hash | `engine/tests/test_topology.cpp` | passed |
 
 ---
 

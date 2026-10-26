@@ -599,6 +599,44 @@ TEST_CASE("T-2-13: Validation rules 1..12 with passing and failing fixtures") {
         auto repG1 = validate(dG1);
         REQUIRE(!hasIssueWithCode(repG1, "L2_LOOP_DETECTED"));
     }
+
+    // Rule 1e: MIXED_SUBNETS_IN_DOMAIN (warning)
+    {
+        // Fixture 1: sw1 with host 192.168.1.10/24 and host 192.168.1.20/24 -> no warning
+        auto dClean = makeG1();
+        auto repClean = validate(dClean);
+        REQUIRE(!hasIssueWithCode(repClean, "MIXED_SUBNETS_IN_DOMAIN"));
+
+        // Fixture 2: sw1 with host 192.168.1.10/24 and host 192.168.2.20/24 -> exactly 1 warning, path names the domain, hint says hosts need a router
+        auto dDiffNet = makeG1();
+        dDiffNet.nodes[2].interfaces[0].ipv4 = IPv4Subnet::parse("192.168.2.20/24").value();
+        auto repDiffNet = validate(dDiffNet);
+        REQUIRE(hasIssueWithCode(repDiffNet, "MIXED_SUBNETS_IN_DOMAIN"));
+        int warnCount = 0;
+        for (const auto& issue : repDiffNet.issues) {
+            if (issue.code == "MIXED_SUBNETS_IN_DOMAIN") {
+                warnCount++;
+                REQUIRE(issue.isWarning());
+                REQUIRE(issue.path.rfind("domains/", 0) == 0); // Path names the domain
+                REQUIRE(issue.hint == "Hosts in different subnets require a router to communicate");
+            }
+        }
+        REQUIRE_EQ(warnCount, 1);
+
+        // Fixture 3: sw1 with 192.168.1.10/24 and 192.168.1.20/25 -> 1 warning
+        auto dDiffPrefix = makeG1();
+        dDiffPrefix.nodes[2].interfaces[0].ipv4 = IPv4Subnet::parse("192.168.1.20/25").value();
+        auto repDiffPrefix = validate(dDiffPrefix);
+        REQUIRE(hasIssueWithCode(repDiffPrefix, "MIXED_SUBNETS_IN_DOMAIN"));
+        int warnCountPrefix = 0;
+        for (const auto& issue : repDiffPrefix.issues) {
+            if (issue.code == "MIXED_SUBNETS_IN_DOMAIN") {
+                warnCountPrefix++;
+                REQUIRE(issue.isWarning());
+            }
+        }
+        REQUIRE_EQ(warnCountPrefix, 1);
+    }
 }
 
 TEST_CASE("T-2-17: MAC unique across the whole topology") {

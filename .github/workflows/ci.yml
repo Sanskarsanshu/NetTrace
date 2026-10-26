@@ -33,6 +33,9 @@ jobs:
           cmake -S engine -B engine/build-asan -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZERS=ON
           cmake --build engine/build-asan --parallel
 
+      - name: Verify Traceability
+        run: python3 scripts/check_traceability.py
+
       - name: Run CTest under ASan & UBSan
         run: |
           ctest --test-dir engine/build-asan --output-on-failure
@@ -43,6 +46,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Verify Traceability
+        run: python scripts/check_traceability.py
 
       - name: Configure CMake
         run: cmake -S engine -B engine/build -DCMAKE_BUILD_TYPE=Release

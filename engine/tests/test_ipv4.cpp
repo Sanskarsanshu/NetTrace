@@ -188,6 +188,63 @@ TEST_CASE("T-2-01: IPv4 accept/reject table and canonical round-trip") {
         EXPECT_FALSE(IPv4Subnet::parse("10.0.0.1/-1").isOk());
         EXPECT_FALSE(IPv4Subnet::parse("10.0.0.1/33").isOk());
         EXPECT_FALSE(IPv4Subnet::parse("10.0.0.1/abc").isOk());
+
+        // M2-03 usableHostRange(address, prefix) independent test vectors:
+        // 192.168.1.0/24  -> 192.168.1.1  .. 192.168.1.254
+        {
+            auto res = usableHostRange(IPv4Address::parse("192.168.1.0").value(), 24);
+            EXPECT_TRUE(res.isOk());
+            EXPECT_EQ(res.value().first.toString(), "192.168.1.1");
+            EXPECT_EQ(res.value().second.toString(), "192.168.1.254");
+        }
+        // 10.0.0.4/30     -> 10.0.0.5     .. 10.0.0.6
+        {
+            auto res = usableHostRange(IPv4Address::parse("10.0.0.4").value(), 30);
+            EXPECT_TRUE(res.isOk());
+            EXPECT_EQ(res.value().first.toString(), "10.0.0.5");
+            EXPECT_EQ(res.value().second.toString(), "10.0.0.6");
+        }
+        // 10.0.0.0/31     -> 10.0.0.0     .. 10.0.0.1
+        {
+            auto res = usableHostRange(IPv4Address::parse("10.0.0.0").value(), 31);
+            EXPECT_TRUE(res.isOk());
+            EXPECT_EQ(res.value().first.toString(), "10.0.0.0");
+            EXPECT_EQ(res.value().second.toString(), "10.0.0.1");
+        }
+        // 10.9.9.9/32     -> 10.9.9.9     .. 10.9.9.9
+        {
+            auto res = usableHostRange(IPv4Address::parse("10.9.9.9").value(), 32);
+            EXPECT_TRUE(res.isOk());
+            EXPECT_EQ(res.value().first.toString(), "10.9.9.9");
+            EXPECT_EQ(res.value().second.toString(), "10.9.9.9");
+        }
+        // 0.0.0.0/0       -> 0.0.0.1      .. 255.255.255.254
+        {
+            auto res = usableHostRange(IPv4Address::parse("0.0.0.0").value(), 0);
+            EXPECT_TRUE(res.isOk());
+            EXPECT_EQ(res.value().first.toString(), "0.0.0.1");
+            EXPECT_EQ(res.value().second.toString(), "255.255.255.254");
+        }
+        // 10.0.16.0/20    -> 10.0.16.1    .. 10.0.31.254
+        {
+            auto res = usableHostRange(IPv4Address::parse("10.0.16.0").value(), 20);
+            EXPECT_TRUE(res.isOk());
+            EXPECT_EQ(res.value().first.toString(), "10.0.16.1");
+            EXPECT_EQ(res.value().second.toString(), "10.0.31.254");
+        }
+        // 192.168.4.0/23  -> 192.168.4.1  .. 192.168.5.254
+        {
+            auto res = usableHostRange(IPv4Address::parse("192.168.4.0").value(), 23);
+            EXPECT_TRUE(res.isOk());
+            EXPECT_EQ(res.value().first.toString(), "192.168.4.1");
+            EXPECT_EQ(res.value().second.toString(), "192.168.5.254");
+        }
+        // Invalid prefix > 32 returns error
+        {
+            auto res = usableHostRange(IPv4Address::parse("10.0.0.1").value(), 33);
+            EXPECT_FALSE(res.isOk());
+            EXPECT_EQ(res.error().code, ErrorCode::InvalidPrefix);
+        }
     }
 
     // T-2-03: The on-link table

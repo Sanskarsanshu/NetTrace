@@ -7,8 +7,18 @@ Write-Host "==========================================" -ForegroundColor Cyan
 
 $allPassed = $true
 
+# 0. Traceability Check
+Write-Host "`n[0/4] Checking Traceability & Test Registration..." -ForegroundColor Yellow
+try {
+    python scripts/check_traceability.py
+    Write-Host "Traceability Check: PASS" -ForegroundColor Green
+} catch {
+    Write-Host "Traceability Check: FAIL" -ForegroundColor Red
+    $allPassed = $false
+}
+
 # 1. C++ Engine Tests
-Write-Host "`n[1/3] Running C++ Engine Tests..." -ForegroundColor Yellow
+Write-Host "`n[1/4] Running C++ Engine Tests..." -ForegroundColor Yellow
 if (Test-Path "engine/build") {
     try {
         & "C:\Users\sansk\AppData\Roaming\Python\Python314\site-packages\cmake\data\bin\ctest.exe" --test-dir engine/build --output-on-failure

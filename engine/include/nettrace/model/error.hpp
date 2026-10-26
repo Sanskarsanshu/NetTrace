@@ -59,7 +59,14 @@ enum class ErrorCode {
     L2LoopDetected,
     LinkDown,
     TtlExpired,
-    MtuExceeded
+    MtuExceeded,
+    MixedSubnetsInDomain,
+    InvalidRoute,
+    RouteNextHopNotOnLink,
+    RouteInterfaceNotFound,
+    DuplicateRoute,
+    ForwardingDisabled,
+    NoRoute
 };
 
 std::string_view errorCodeToString(ErrorCode code);

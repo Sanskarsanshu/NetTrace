@@ -56,6 +56,13 @@ std::string_view errorCodeToString(ErrorCode code) {
         case ErrorCode::LinkDown: return "LINK_DOWN";
         case ErrorCode::TtlExpired: return "TTL_EXPIRED";
         case ErrorCode::MtuExceeded: return "MTU_EXCEEDED";
+        case ErrorCode::MixedSubnetsInDomain: return "MIXED_SUBNETS_IN_DOMAIN";
+        case ErrorCode::InvalidRoute: return "INVALID_ROUTE";
+        case ErrorCode::RouteNextHopNotOnLink: return "ROUTE_NEXT_HOP_NOT_ON_LINK";
+        case ErrorCode::RouteInterfaceNotFound: return "ROUTE_INTERFACE_NOT_FOUND";
+        case ErrorCode::DuplicateRoute: return "DUPLICATE_ROUTE";
+        case ErrorCode::ForwardingDisabled: return "FORWARDING_DISABLED";
+        case ErrorCode::NoRoute: return "NO_ROUTE";
     }
     return "UNKNOWN_ERROR";
 }

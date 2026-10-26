@@ -246,4 +246,13 @@ bool isOnLink(const IPv4Address& hostAddr, uint8_t prefixLen, const IPv4Address&
     return (hostAddr.toUint32() & m) == (destAddr.toUint32() & m);
 }
 
+Result<std::pair<IPv4Address, IPv4Address>> usableHostRange(const IPv4Address& address, uint8_t prefix) {
+    if (prefix > 32) {
+        return Result<std::pair<IPv4Address, IPv4Address>>::err(
+            ErrorCode::InvalidPrefix, "Prefix length " + std::to_string(prefix) + " exceeds 32");
+    }
+    IPv4Subnet sub(address, prefix);
+    return Result<std::pair<IPv4Address, IPv4Address>>::ok(sub.hostRange());
+}
+
 } // namespace nettrace

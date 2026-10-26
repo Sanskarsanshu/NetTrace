@@ -447,6 +447,30 @@ ValidationReport validate(const TopologyDraft& draft, const ValidationOptions& o
                     "' (shared with " + ins.first->second.nodeId.str() + "." + ins.first->second.interfaceId.str() + ")");
             }
         }
+
+        // Rule 1e: MIXED_SUBNETS_IN_DOMAIN (warning)
+        std::optional<std::pair<IPv4Address, uint8_t>> firstSubnet;
+        bool mixed = false;
+        for (const auto& ref : domain.interfaces) {
+            auto itNode = nodeMap.find(ref.nodeId.str());
+            if (itNode == nodeMap.end()) continue;
+            const auto* iface = itNode->second->findInterface(ref.interfaceId);
+            if (!iface || !iface->ipv4.has_value()) continue;
+
+            auto subnetKey = std::make_pair(iface->ipv4->network(), iface->ipv4->prefixLength());
+            if (!firstSubnet.has_value()) {
+                firstSubnet = subnetKey;
+            } else if (*firstSubnet != subnetKey) {
+                mixed = true;
+                break;
+            }
+        }
+        if (mixed) {
+            report.addWarning("MIXED_SUBNETS_IN_DOMAIN", "domains/" + domain.id,
+                "Addressed interfaces in broadcast domain '" + domain.id +
+                "' do not all share the same network address and prefix length",
+                "Hosts in different subnets require a router to communicate");
+        }
     }
 
     // Rule M2-22: Disconnected topology (warning)
