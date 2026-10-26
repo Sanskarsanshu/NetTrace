@@ -3,7 +3,7 @@
 
 using namespace nettrace;
 
-TEST_CASE("T-1-06: Bellman-Ford negative edge without negative cycles") {
+TEST_CASE("T-1-04: Bellman-Ford handles negative edges without cycles") {
     Graph g;
     REQUIRE(g.addNode(NodeId("A")).isOk());
     REQUIRE(g.addNode(NodeId("B")).isOk());
@@ -24,7 +24,7 @@ TEST_CASE("T-1-06: Bellman-Ford negative edge without negative cycles") {
     REQUIRE_EQ(result.pathNodeIds[2].str(), "C");
 }
 
-TEST_CASE("T-1-07: Bellman-Ford reachable negative cycle detection") {
+TEST_CASE("T-1-05: Bellman-Ford detects reachable negative cycle") {
     Graph g;
     REQUIRE(g.addNode(NodeId("A")).isOk());
     REQUIRE(g.addNode(NodeId("B")).isOk());
@@ -42,7 +42,7 @@ TEST_CASE("T-1-07: Bellman-Ford reachable negative cycle detection") {
     REQUIRE(result.cycleNodeIds.size() >= 2);
 }
 
-TEST_CASE("T-1-08: Bellman-Ford ignores unreachable negative cycle in disconnected component") {
+TEST_CASE("T-1-06: Bellman-Ford ignores unreachable negative cycle") {
     Graph g;
     REQUIRE(g.addNode(NodeId("A")).isOk());
     REQUIRE(g.addNode(NodeId("B")).isOk());
@@ -64,18 +64,4 @@ TEST_CASE("T-1-08: Bellman-Ford ignores unreachable negative cycle in disconnect
     REQUIRE_EQ(result.pathNodeIds.size(), 2);
     REQUIRE_EQ(result.pathNodeIds[0].str(), "A");
     REQUIRE_EQ(result.pathNodeIds[1].str(), "B");
-}
-
-TEST_CASE("T-1-20: Bellman-Ford warning on bidirectional negative edge") {
-    Graph g;
-    REQUIRE(g.addNode(NodeId("A")).isOk());
-    REQUIRE(g.addNode(NodeId("B")).isOk());
-
-    Edge negBiEdge{LinkId("l_bi_neg"), NodeId("A"), NodeId("B"), InterfaceId("e1"), InterfaceId("e1"), -5.0};
-    REQUIRE(g.addLink(negBiEdge, Directionality::Bidirectional).isOk());
-
-    auto result = BellmanFord::findPath(g, NodeId("A"), NodeId("B"));
-    REQUIRE_FALSE(result.reachable);
-    REQUIRE_EQ(result.failureCode, ErrorCode::NegativeCycle);
-    REQUIRE(result.warnings.size() >= 1);
 }

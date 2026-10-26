@@ -6,15 +6,24 @@ This document tracks all networking rules, architectural constraints, and functi
 
 | Rule / Requirement | Source | Target Module | Test IDs | Status |
 |---|---|---|---|---|
-| Graph types & deterministic node/edge ordering | NR §7, TASKS M1 | `engine/routing/graph` | T-1-01 | implemented |
-| Dijkstra non-negative minimum cost | NR §7.2, PROJECT §6.2 | `engine/routing/dijkstra` | T-1-02, T-1-03 | implemented |
-| Dijkstra negative weight rejection | NR §7.2 | `engine/routing/dijkstra` | T-1-04 | implemented |
-| BFS fewest link hops & post-reconstruction cost | NR §7.1, PROJECT §6.2 | `engine/routing/bfs` | T-1-05 | implemented |
-| Bellman-Ford negative edge handling | NR §7.3 | `engine/routing/bellman_ford` | T-1-06 | implemented |
-| Bellman-Ford reachable negative cycle detection | NR §7.3 | `engine/routing/bellman_ford` | T-1-07, T-1-08 | implemented |
-| Widest-path bottleneck bandwidth maximization | NR §7.4, PROJECT §6.2 | `engine/routing/widest` | T-1-09, T-1-10 | implemented |
-| Source == destination edge case handling | TASKS M1-22 | `engine/routing/*` | T-1-11 | implemented |
-| Parallel edges & directionality handling | TASKS M1-11, M1-12 | `engine/routing/graph` | T-1-12, T-1-13 | implemented |
+| Dijkstra picks min-cost path over fewer hops | NR §7.2, PROJECT §6.2 | `engine/routing/dijkstra` | T-1-01 | implemented |
+| Dijkstra negative weight rejection | NR §7.2 | `engine/routing/dijkstra` | T-1-02 | implemented |
+| BFS fewest link hops & post-reconstruction cost | NR §7.1, PROJECT §6.2 | `engine/routing/bfs` | T-1-03 | implemented |
+| Bellman-Ford negative edge handling | NR §7.3 | `engine/routing/bellman_ford` | T-1-04 | implemented |
+| Bellman-Ford reachable negative cycle detection | NR §7.3 | `engine/routing/bellman_ford` | T-1-05 | implemented |
+| Bellman-Ford ignores unreachable negative cycle | NR §7.3 | `engine/routing/bellman_ford` | T-1-06 | implemented |
+| Widest-path bottleneck bandwidth maximization | NR §7.4, PROJECT §6.2 | `engine/routing/widest` | T-1-07 | implemented |
+| Unreachable destination for all algorithms | TASKS M1-17 | `engine/routing/*` | T-1-08 | implemented |
+| Source == destination edge case handling | TASKS M1-22 | `engine/routing/*` | T-1-09 | implemented |
+| Parallel edges & link ID tracking | TASKS M1-10 | `engine/routing/graph` | T-1-10 | implemented |
+| Directed vs bidirectional link traversal | TASKS M1-11 | `engine/routing/graph` | T-1-11 | implemented |
+| Inactive link and node exclusion | TASKS M1-12 | `engine/routing/graph` | T-1-12 | implemented |
+| Tie-breaking determinism (100 shuffled runs) | TASKS M1-13 | `engine/routing/*` | T-1-13 | implemented |
+| Property: Dijkstra == Bellman-Ford == Floyd-Warshall | TASKS M1-14 | `engine/routing/*` | T-1-14 | implemented |
+| Property: BFS hop count optimality | TASKS M1-15 | `engine/routing/bfs` | T-1-15 | implemented |
+| Property: Widest-path bottleneck optimality | TASKS M1-16 | `engine/routing/widest` | T-1-16 | implemented |
+| Graph validation rejects malformed graphs | TASKS M1-17 | `engine/routing/graph` | T-1-17 | implemented |
+| Memory safety under ASan/UBSan | TASKS M1-18 | `engine/` | T-1-18 | pending: runs on Linux CI |
 | IPv4 subnetting & mask-based on-link calculation | NR §4.2 | `engine/model/ipv4` | T-2-01, T-2-02 | planned |
 | Same-subnet delivery avoids default gateway | NR §4.2, PROJECT §4.1 | `engine/forwarding/host_decision` | T-2-03 | planned |
 | Gateway must be on directly connected subnet | NR §4.3 | `engine/model/validate` | T-2-04 | planned |

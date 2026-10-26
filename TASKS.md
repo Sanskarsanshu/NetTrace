@@ -153,24 +153,24 @@ These resolve inconsistencies between the three documents. Record each as a shor
 - [x] M1-25 Document tie-breaking and complexity in `docs/networking-model.md` (algorithms section).
 
 ### M1-F Tests (`engine/tests/routing/`)
-- [ ] T-1-01 Dijkstra picks minimum-cost path on a hand-built graph where the fewest-hop path is not the cheapest.
-- [ ] T-1-02 Dijkstra rejects a negative edge with `NEGATIVE_WEIGHT`.
-- [ ] T-1-03 BFS picks fewest edges even when costlier; reported cost is correct for the reconstructed path.
-- [ ] T-1-04 Bellman–Ford handles negative edges without cycles and matches the hand-computed result.
-- [ ] T-1-05 Bellman–Ford detects a reachable negative cycle and reports it.
-- [ ] T-1-06 Bellman–Ford ignores an unreachable negative cycle.
-- [ ] T-1-07 Widest path maximizes bottleneck; wider path may be longer/costlier.
-- [ ] T-1-08 Unreachable destination for all four algorithms.
-- [ ] T-1-09 Source equals destination for all four algorithms.
-- [ ] T-1-10 Parallel edges: correct edge chosen per algorithm; `pathLinkIds` identifies it.
-- [ ] T-1-11 Directed link usable only one way; bidirectional usable both ways.
-- [ ] T-1-12 Inactive link excluded; result changes accordingly.
-- [ ] T-1-13 Tie-breaking determinism: same graph run 100 times and with shuffled insertion order gives identical path.
-- [ ] T-1-14 Property test (seeded): on random non-negative graphs Dijkstra == Bellman–Ford == brute-force/Floyd–Warshall reference distance.
-- [ ] T-1-15 Property test: BFS length ≤ any other path's edge count.
-- [ ] T-1-16 Property test: widest-path bottleneck ≥ bottleneck of every other simple path (small graphs, brute force).
-- [ ] T-1-17 Malformed graph (dangling edge, duplicate ID, bad probability) is rejected, not crashed.
-- [ ] T-1-18 Run under ASan/UBSan: clean.
+- [x] T-1-01 Dijkstra picks minimum-cost path on a hand-built graph where the fewest-hop path is not the cheapest.
+- [x] T-1-02 Dijkstra rejects a negative edge with `NEGATIVE_WEIGHT`.
+- [x] T-1-03 BFS picks fewest edges even when costlier; reported cost is correct for the reconstructed path.
+- [x] T-1-04 Bellman–Ford handles negative edges without cycles and matches the hand-computed result.
+- [x] T-1-05 Bellman–Ford detects a reachable negative cycle and reports it.
+- [x] T-1-06 Bellman–Ford ignores an unreachable negative cycle.
+- [x] T-1-07 Widest path maximizes bottleneck; wider path may be longer/costlier.
+- [x] T-1-08 Unreachable destination for all four algorithms.
+- [x] T-1-09 Source equals destination for all four algorithms.
+- [x] T-1-10 Parallel edges: correct edge chosen per algorithm; `pathLinkIds` identifies it.
+- [x] T-1-11 Directed link usable only one way; bidirectional usable both ways.
+- [x] T-1-12 Inactive link excluded; result changes accordingly.
+- [x] T-1-13 Tie-breaking determinism: same graph run 100 times and with shuffled insertion order gives identical path.
+- [x] T-1-14 Property test (seeded): on random non-negative graphs Dijkstra == Bellman–Ford == brute-force/Floyd–Warshall reference distance.
+- [x] T-1-15 Property test: BFS length ≤ any other path's edge count.
+- [x] T-1-16 Property test: widest-path bottleneck ≥ bottleneck of every other simple path (small graphs, brute force).
+- [x] T-1-17 Malformed graph (dangling edge, duplicate ID, bad probability) is rejected, not crashed.
+- [ ] T-1-18 Run under ASan/UBSan: clean (pending: runs on Linux CI; MinGW GCC lacks libasan).
 
 ### M1-G Optional (only after the above pass)
 - [ ] M1-26 Minimal JSON I/O for a graph + request (`nlohmann/json`) and a tiny CLI `nettrace_cli route --in file.json` printing one JSON result. (Full contract is M4.)

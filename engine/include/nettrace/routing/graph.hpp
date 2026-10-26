@@ -50,6 +50,7 @@ public:
 
     // Edge / Link management
     Result<bool> addLink(Edge edge, Directionality direction = Directionality::Bidirectional);
+    bool hasLink(const LinkId& id) const;
     const std::vector<Edge>& getEdges(const NodeId& from) const;
     std::vector<Edge> getOutgoingEdges(const NodeId& from, bool excludeInactive = true) const;
     const Edge* findEdge(const LinkId& linkId, const NodeId& from, const NodeId& to) const;

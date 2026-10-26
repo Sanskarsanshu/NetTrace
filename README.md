@@ -50,10 +50,11 @@ flowchart TD
 
 ## 3. Toolchain & Prerequisites
 
-- **C++ Compiler:** GCC 16+ / Clang with C++17 support (`g++` via MSYS2 UCRT64).
-- **C++ Build System:** CMake 3.25+ and `mingw32-make` / `ninja`.
-- **Backend Runtime:** Python 3.11+ (tested on Python 3.14) with FastAPI, Pydantic v2, and Pytest.
-- **Frontend Runtime:** Node.js v20+ (tested on v24) and npm.
+Exact confirmed local toolchain versions:
+- **C++ Compiler:** GCC 16.2.0 (`x86_64-w64-mingw32` via MSYS2 UCRT64).
+- **C++ Build System:** CMake 4.4.4 and GNU Make 4.4.1 (`mingw32-make.exe`).
+- **Backend Runtime:** Python 3.14.0 with FastAPI, Pydantic v2, and Pytest.
+- **Frontend Runtime:** Node.js v24.11.0 and npm 11.6.1.
 
 ---
 

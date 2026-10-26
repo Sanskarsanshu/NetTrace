@@ -12,6 +12,15 @@ elseif (MSVC)
     add_compile_options(/W4 /permissive-)
 endif()
 
+# Sanitizer option (used on Linux CI)
+option(ENABLE_SANITIZERS "Enable Address and Undefined Behavior Sanitizers" OFF)
+if (ENABLE_SANITIZERS)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=address,undefined)
+    endif()
+endif()
+
 # Core static library
 add_library(nettrace_core STATIC
     src/model/error.cpp
@@ -36,6 +45,7 @@ add_executable(nettrace_tests
     tests/test_bfs.cpp
     tests/test_bellman_ford.cpp
     tests/test_widest_path.cpp
+    tests/test_property.cpp
 )
 
 target_include_directories(nettrace_tests PRIVATE
@@ -47,4 +57,21 @@ target_link_libraries(nettrace_tests PRIVATE
     nettrace_core
 )
 
-add_test(NAME NetTrace_Algorithms_And_Graph_Tests COMMAND nettrace_tests)
+# Register each test individually with CTest
+add_test(NAME T-1-01 COMMAND nettrace_tests "T-1-01")
+add_test(NAME T-1-02 COMMAND nettrace_tests "T-1-02")
+add_test(NAME T-1-03 COMMAND nettrace_tests "T-1-03")
+add_test(NAME T-1-04 COMMAND nettrace_tests "T-1-04")
+add_test(NAME T-1-05 COMMAND nettrace_tests "T-1-05")
+add_test(NAME T-1-06 COMMAND nettrace_tests "T-1-06")
+add_test(NAME T-1-07 COMMAND nettrace_tests "T-1-07")
+add_test(NAME T-1-08 COMMAND nettrace_tests "T-1-08")
+add_test(NAME T-1-09 COMMAND nettrace_tests "T-1-09")
+add_test(NAME T-1-10 COMMAND nettrace_tests "T-1-10")
+add_test(NAME T-1-11 COMMAND nettrace_tests "T-1-11")
+add_test(NAME T-1-12 COMMAND nettrace_tests "T-1-12")
+add_test(NAME T-1-13 COMMAND nettrace_tests "T-1-13")
+add_test(NAME T-1-14 COMMAND nettrace_tests "T-1-14")
+add_test(NAME T-1-15 COMMAND nettrace_tests "T-1-15")
+add_test(NAME T-1-16 COMMAND nettrace_tests "T-1-16")
+add_test(NAME T-1-17 COMMAND nettrace_tests "T-1-17")

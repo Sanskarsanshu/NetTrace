@@ -59,6 +59,46 @@ public:
         return failed == 0 ? 0 : 1;
     }
 
+    const std::vector<TestCase>& tests() const { return tests_; }
+
+    int runFilter(const std::string& pattern) {
+        int passed = 0;
+        int failed = 0;
+        int matched = 0;
+        std::cout << "==========================================\n";
+        std::cout << "   NetTrace C++ Unit Test Runner (filter: " << pattern << ")\n";
+        std::cout << "==========================================\n";
+
+        for (const auto& test : tests_) {
+            if (test.name.find(pattern) != std::string::npos) {
+                matched++;
+                try {
+                    test.func();
+                    std::cout << "[PASS] " << test.name << "\n";
+                    passed++;
+                } catch (const TestFailure& e) {
+                    std::cout << "[FAIL] " << test.name << "\n       " << e.what() << "\n";
+                    failed++;
+                } catch (const std::exception& e) {
+                    std::cout << "[EXCEPTION] " << test.name << "\n            " << e.what() << "\n";
+                    failed++;
+                } catch (...) {
+                    std::cout << "[CRASH] " << test.name << " threw an unknown exception\n";
+                    failed++;
+                }
+            }
+        }
+
+        std::cout << "------------------------------------------\n";
+        std::cout << "Summary: " << passed << " passed, " << failed << " failed (matched " << matched << ")\n";
+        std::cout << "==========================================\n";
+        if (matched == 0) {
+            std::cerr << "Error: No tests matched filter '" << pattern << "'\n";
+            return 2;
+        }
+        return failed == 0 ? 0 : 1;
+    }
+
 private:
     std::vector<TestCase> tests_;
 };

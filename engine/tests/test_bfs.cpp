@@ -3,7 +3,7 @@
 
 using namespace nettrace;
 
-TEST_CASE("T-1-05: BFS selects fewest link hops and reports reconstructed cost") {
+TEST_CASE("T-1-03: BFS picks fewest edges even when costlier; reports totalCost") {
     Graph g;
     REQUIRE(g.addNode(NodeId("A")).isOk());
     REQUIRE(g.addNode(NodeId("B")).isOk());
@@ -32,27 +32,4 @@ TEST_CASE("T-1-05: BFS selects fewest link hops and reports reconstructed cost")
     REQUIRE_EQ(result.objectiveName, "fewest_hops");
     REQUIRE_EQ(result.objectiveValue, 1.0);
     REQUIRE_EQ(result.objectiveUnit, "hops");
-}
-
-TEST_CASE("T-1-11: Source equals destination handling in BFS") {
-    Graph g;
-    REQUIRE(g.addNode(NodeId("A")).isOk());
-
-    auto result = BFS::findPath(g, NodeId("A"), NodeId("A"));
-    REQUIRE(result.reachable);
-    REQUIRE_EQ(result.pathNodeIds.size(), 1);
-    REQUIRE_EQ(result.pathNodeIds[0].str(), "A");
-    REQUIRE_EQ(result.linkHopCount, 0);
-    REQUIRE_EQ(result.objectiveValue, 0.0);
-    REQUIRE_EQ(result.totalCost, 0.0);
-}
-
-TEST_CASE("BFS unreachable destination") {
-    Graph g;
-    REQUIRE(g.addNode(NodeId("A")).isOk());
-    REQUIRE(g.addNode(NodeId("B")).isOk());
-
-    auto result = BFS::findPath(g, NodeId("A"), NodeId("B"));
-    REQUIRE_FALSE(result.reachable);
-    REQUIRE_EQ(result.failureCode, ErrorCode::Unreachable);
 }

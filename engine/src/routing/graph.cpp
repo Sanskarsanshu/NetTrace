@@ -28,6 +28,10 @@ bool Graph::hasNode(const NodeId& id) const {
     return nodes_.find(id) != nodes_.end();
 }
 
+bool Graph::hasLink(const LinkId& id) const {
+    return linkDirectionality_.find(id) != linkDirectionality_.end();
+}
+
 const NodeInfo* Graph::getNode(const NodeId& id) const {
     auto it = nodes_.find(id);
     if (it != nodes_.end()) {
@@ -39,6 +43,10 @@ const NodeInfo* Graph::getNode(const NodeId& id) const {
 Result<bool> Graph::addLink(Edge edge, Directionality direction) {
     if (edge.linkId.empty()) {
         return Result<bool>::err(ErrorCode::DuplicateId, "Link ID cannot be empty", "link.id");
+    }
+    if (hasLink(edge.linkId)) {
+        return Result<bool>::err(ErrorCode::DuplicateId, 
+            "Link with ID '" + edge.linkId.str() + "' already exists", "link.id");
     }
     if (edge.from == edge.to) {
         return Result<bool>::err(ErrorCode::SelfLoopRejected, 
