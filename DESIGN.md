@@ -259,9 +259,11 @@ Only one terminal badge per packet appears, and only after the cursor has reache
 | Original IP packet | Circle | `--nt-accent` |
 | ICMP response | Diamond | `--nt-icmp` |
 | IP fragment | Small square (clustered, labeled "1/3") | `--nt-frag` |
+| ARP frame | Outlined hexagon with text "ARP" | `--nt-text-muted` |
 
-- **TTL pips:** a ring of segmented pips around the marker, one per initial TTL step up to 8; above 8 the ring shows a proportion with the number in the marker tooltip. Pips consumed show as hollow. The exact TTL always appears as text in the packet label and the inspector.
-- Marker has a text label (`pkt-0001`) shown on hover, selection, and at 100%+ zoom.
+- **ARP marker:** outlined hexagon with the text "ARP", color `--nt-text-muted` (neutral, to avoid colliding with status colors). Packet inspector shows ARP fields (operation, sender/target IP and MAC) and omits the IP/TTL/port rows for ARP.
+- **TTL pips:** a ring of segmented pips around the marker, one per initial TTL step up to 8; above 8 the ring shows a proportion with the number in the marker tooltip. Pips consumed show as hollow. The exact TTL always appears as text in the packet label and the inspector. (ARP frames carry no TTL pips).
+- Marker has a text label (`pkt-0001`, `arp-0001`) shown on hover, selection, and at 100%+ zoom.
 - During a link traversal the marker sits on the link; at a router it sits on the router with the lookup beat (section 12.2).
 
 ---
@@ -283,6 +285,7 @@ A horizontal strip in the bottom panel (default tab) that lays the packet's jour
 - **Pips** repeat the marker's TTL gauge under each cell, so the depletion across the path is visible.
 - **Cursor** follows `currentEventIndex`; cells after the cursor are drawn faint and labeled "not reached yet" for assistive tech. Clicking a cell moves the cursor to that router's receive event.
 - **Terminal cell:** delivered (check + "Delivered"), expired (clock + "TTL expired at R3"), dropped (cross + reason code).
+- **ARP lane:** ARP is shown as a small lane before the first hop of the data packet, labeled `"ARP (resolving next hop)"`.
 - **ICMP and fragments:** a second lane under the original packet's lane for each related packet, labeled with its own ID and parent ("pkt-0002 ICMP Time Exceeded, reply to pkt-0001"). The ICMP lane starts at the router that generated it and runs back toward the source, making "this is a separate packet on its own return path" visible.
 - **Honesty rules:** cells come only from `TTL_DECREMENTED`, `TTL_EXPIRED`, `ROUTE_SELECTED`, and forwarding events. If an event type is missing, the cell shows "Not modeled" instead of a guessed value.
 - **Narrow screens:** the ribbon scrolls horizontally inside its own container; it never causes page-level horizontal scroll.
@@ -387,29 +390,41 @@ The Inspect tab follows the **cursor event** by default (a "Follow playback" tog
 
 Sections (collapsible, state remembered):
 
-1. **Summary:** packet ID, kind (Original / ICMP / Fragment), status chip (icon + text), parent link ("Reply to pkt-0001", clickable).
+1. **Summary:** packet ID, kind (Original / ICMP / Fragment / ARP), status chip (icon + text), parent link ("Reply to pkt-0001", clickable).
 2. **IP header** (only fields the engine models): source, destination, protocol, TTL (before → after at the cursor), identification, DF, MF, fragment offset (in 8-byte units with the byte offset in parentheses), total length. Checksum row shows **Not modeled**.
-3. **Lengths:** three separate rows, each labeled: *Payload*, *IP total length*, *Frame length* (frame row shows "Not modeled" if L2 sizes are not simulated). This prevents confusing payload with total length.
-4. **Link layer:** incoming and outgoing frame source/destination MAC, interfaces, EtherType, with a note "MAC addresses change on every routed link. IP addresses do not."
-5. **Location:** current node, next hop, incoming/outgoing interface.
-6. **Hop history:** compact list, click to move cursor.
-7. **Outcome:** reason code (mono), plain explanation, responsible node/link.
+3. **Transport section:** protocol, src port, dst port, TCP flags (if TCP), with a note **"TCP handshake not modeled"**. Omitted for ICMP and ARP.
+4. **Lengths:** three separate rows, each labeled: *Payload*, *IP total length*, *Frame length* (frame row shows "Not modeled" if L2 sizes are not simulated). This prevents confusing payload with total length.
+5. **Link layer:** incoming and outgoing frame source/destination MAC, interfaces, EtherType, with a note "MAC addresses change on every routed link. IP addresses do not."
+6. **Location:** current node, next hop, incoming/outgoing interface.
+7. **Hop history:** compact list, click to move cursor.
+8. **Outcome:** reason code (mono), plain explanation, responsible node/link.
+
+*Note for ARP frames:* Packet inspector displays ARP fields (operation: Request / Reply, sender IP and MAC, target IP and MAC) and omits the IP/TTL/port rows for ARP.
 
 Copyable values (IP, MAC, packet ID) use `<CopyableValue>`: click copies, announces "Copied" via `aria-live`.
 
-### 8.2 Router inspector
+### 8.2 Host inspector
+
+1. Name, state (Up/Down), default gateway.
+2. **Interfaces table:** name, IPv4/prefix, MAC, MTU, state.
+3. **Services:** listening services table (`protocol`, `port`, `label`).
+4. **ARP cache:** table of cached entries (`IP`, `MAC`, source `learned` or `preloaded`) at the current cursor.
+5. **Recent events:** last 10 events at this host, click to jump.
+
+### 8.3 Router inspector
 
 1. Name, state (Up/Down), forwarding enabled, processing delay ("Not modeled" when null).
 2. **Interfaces table:** name, IPv4/prefix, MAC, MTU, state.
 3. **Forwarding table:** prefix, next hop, interface, source (connected / static / default / policy), preference, metric. The row matched by the *current* lookup is highlighted and labeled "Matched (longest prefix)". Rows considered but rejected show a muted "Rejected: <reason>".
-4. **Current decision:** one sentence built from the engine's decision record.
-5. **Recent events:** last 10 events at this router, click to jump.
+4. **ARP cache:** table of cached entries (`IP`, `MAC`, source `learned` or `preloaded`) at the current cursor.
+5. **Current decision:** one sentence built from the engine's decision record.
+6. **Recent events:** last 10 events at this router, click to jump.
 
-### 8.3 Link inspector
+### 8.4 Link inspector
 
 State, directionality, endpoints, cost, bandwidth (capacity and available), propagation delay, loss (configured), MTU, queue ("Not modeled" if absent), and **observed** crossings in this run (count and drops), kept separate from configured values.
 
-### 8.4 Explain panel (What / Where / Why / Evidence / What next)
+### 8.5 Explain panel (What / Where / Why / Evidence / What next)
 
 A fixed five-part layout for the selected event, per `NETWORKING_RULES.md` §23:
 
@@ -424,6 +439,12 @@ What next       Forwarded to R3 (transmit started at t = 4.2 ms)
 - Text comes from the engine's `message` and `details`; the UI only lays it out. The Evidence row renders structured `details` as mono key/value pairs.
 - If an event has no explanation fields, show "Explanation not provided by the engine for this event." Never write one on the client.
 - "What to try" (only on failures): a short static hint keyed by `reasonCode` (section 16.3). It is advice about configuration, not a claim about the outcome.
+
+### 8.6 Address registry panel (read-only)
+
+A read-only table in Inspect, labeled:
+*"Ground truth used by the engine and for validation. Devices do not read this table; in ARP mode they learn addresses through ARP frames."*
+Displays the immutable snapshot registry: `IP address`, `MAC address`, `Node ID`, `Interface ID`, `Broadcast Domain ID`.
 
 ---
 
@@ -445,7 +466,7 @@ A table, not a decorative list:
 Behavior:
 
 - Rows are in `sequence` order, always. Filtering never reorders.
-- **Filters:** by packet (original / ICMP / fragments), by node, by layer, "Only failures". Filters hide rows; they never rewrite them. A "Showing 12 of 47 events" line appears when filtered.
+- **Filters:** by packet (original / ICMP / fragments / ARP), by node, by layer, "Only failures". ARP events carry layer "Link"; a dedicated filter chip **"ARP"** toggles ARP frame events. Filters hide rows; they never rewrite them. A "Showing 12 of 47 events" line appears when filtered.
 - Current-cursor row has an accent left bar and the text "Current". Rows after the cursor are visible but dimmed and described to assistive tech as "upcoming".
 - Click a row: moves the cursor (snaps, no animation) and pins the inspector.
 - Keyboard: the table is a single tab stop; arrows move rows, `Enter` selects, `Home`/`End` jump.
@@ -477,6 +498,7 @@ Estimated end-to-end loss          [Estimated]
 ```
 
 - Fields: label, value + unit, **provenance tag**, definition tooltip.
+- Standard tiles: Router hops, Links crossed, Estimated/Observed Delay (ms), Estimated/Observed Loss (%), **ARP exchanges** (count), **ARP overhead (ms)**.
 - Provenance tags (text chip plus a distinct icon): **Configured** (from the topology), **Estimated** (computed from a model), **Observed** (from this run's events), **Not modeled** (no value).
 - Missing values show "Not modeled" in `--nt-text-muted`, never `0`, never a dash that could read as zero.
 - Estimated and observed values for the same quantity sit side by side (loss, delay) and are never merged.

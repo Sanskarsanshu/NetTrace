@@ -226,6 +226,38 @@ For a routed packet:
 
 If MAC-level detail is disabled, still show the conceptual next-hop/egress-interface decision and label the view as an abstraction.
 
+## 5.4 ARP and neighbor resolution (modeled)
+
+Per decision D-21, NetTrace 3D models Address Resolution Protocol (ARP) while preserving an optional abstracted resolution mode.
+
+### Address Registry vs. ARP Cache
+1. **AddressRegistry:** Global, read-only table built from the immutable topology snapshot containing `{ip, mac, nodeId, interfaceId, broadcastDomainId}`. Used for validation, UI ground truth, and `arpMode: "abstracted"`. Modeled nodes **never** read it to resolve addresses.
+2. **ArpCache:** Maintained individually per host and router node. Maps `IP -> MAC` with a source tag (`learned` or `preloaded`). Entries persist for the duration of the run (no aging timers in v1). Cleared at run start unless `preloadArpCaches` is true.
+
+### ARP Forwarding Rules (ARP-1 to ARP-11)
+- **ARP-1:** The next-hop IP is the destination if on-link, else the gateway/route next hop. ARP resolves the **NEXT-HOP IP**, never a remote destination.
+- **ARP-2:** A node checks its own `ArpCache` first. Hit -> `ARP_CACHE_HIT`, no ARP frame is sent.
+- **ARP-3:** Miss -> `ARP_CACHE_MISS`; hold the packet (single pending packet in v1); broadcast an ARP request frame:
+  - Destination MAC: `ff:ff:ff:ff:ff:ff`
+  - Sender MAC/IP: Requester interface MAC and IP
+  - Target MAC: `00:00:00:00:00:00`
+  - Target IP: Next-hop IP
+  - EtherType: `0x0806` (kind ARP, no IP header, no TTL).
+- **ARP-4:** Switches learn the source MAC and **FLOOD** the broadcast frame to every active port in the broadcast domain except the ingress port. Routers never forward ARP; ARP never crosses a router boundary.
+- **ARP-5:** Only the node owning the target IP on that receiving interface replies; other nodes ignore it silently (no event emitted unless verbose mode).
+- **ARP-6:** The target node caches the requester's IP->MAC mapping (`ARP_CACHE_UPDATED`), then sends a **UNICAST** reply (sender MAC = its interface MAC, target MAC = requester MAC).
+- **ARP-7:** The requester receives the reply, caches the target's IP->MAC mapping (`ARP_CACHE_UPDATED`), releases the pending data packet, and builds the Ethernet frame with destination MAC = the resolved MAC (`FRAME_ENCAPSULATED`).
+- **ARP-8:** If no reply is received within `arpTimeoutMs` (default 1000 virtual ms, single attempt) -> `ARP_RESOLUTION_FAILED`; the pending packet is dropped with reason `NEXT_HOP_UNRESOLVED`.
+- **ARP-9:** ARP frames are distinct frames with unique IDs (`arp-0001`, ...) and `parentId` = the data packet that triggered them. They obey link state (up/down), propagation/serialization delay, and packet loss like any frame (loss draws consume the seeded PRNG in event order).
+- **ARP-10:** Routers use ARP on each egress segment, including the final hop to the destination host.
+- **ARP-11:** Not modeled (visibly labeled in UI): cache aging, gratuitous ARP, proxy ARP, ARP retries, duplicate-address detection.
+
+### Abstracted Mode
+When `arpMode: "abstracted"` is selected:
+- Resolution is an instant registry lookup **SCOPED TO THE SENDER'S BROADCAST DOMAIN**.
+- Emits the event `NEIGHBOR_RESOLVED_ABSTRACTED`.
+- An address in another broadcast domain is never resolvable by lookup.
+
 ---
 
 # 6. Routing table and route selection
@@ -426,7 +458,15 @@ Every meaningful state change must produce an event containing:
 Recommended event types include:
 - `PACKET_CREATED`
 - `HOST_ROUTE_LOOKUP`
-- `ARP_REQUIRED` (only if ARP is modeled; otherwise no ARP exchange is implied)
+- `NEIGHBOR_RESOLVED_ABSTRACTED`
+- `ARP_CACHE_HIT`
+- `ARP_CACHE_MISS`
+- `ARP_REQUEST_SENT`
+- `ARP_REQUEST_RECEIVED`
+- `ARP_REPLY_SENT`
+- `ARP_REPLY_RECEIVED`
+- `ARP_CACHE_UPDATED`
+- `ARP_RESOLUTION_FAILED`
 - `FRAME_ENCAPSULATED`
 - `SWITCH_MAC_LEARNED`
 - `SWITCH_FORWARDED`
@@ -440,6 +480,7 @@ Recommended event types include:
 - `TTL_DECREMENTED`
 - `TTL_EXPIRED`
 - `ICMP_GENERATED`
+- `TRANSPORT_DEMUX`
 - `FRAGMENT_CREATED`
 - `FRAGMENT_DROPPED`
 - `REASSEMBLY_STARTED`
@@ -448,7 +489,64 @@ Recommended event types include:
 - `PACKET_DROPPED`
 - `RUN_COMPLETED`
 
+Packet kinds:
+- `IP`
+- `ARP`
+
+Standard reason codes include:
+- `INVALID_ADDRESS`, `INVALID_PREFIX`, `INVALID_GATEWAY`, `GATEWAY_UNREACHABLE`
+- `NO_ROUTE`, `NO_FEASIBLE_ROUTE`, `NEXT_HOP_UNRESOLVED`
+- `INTERFACE_DOWN`, `LINK_DOWN`, `DESTINATION_UNAVAILABLE`
+- `TTL_EXPIRED`, `HOP_LIMIT_EXPIRED` (IPv6)
+- `MTU_EXCEEDED_DF_SET`, `IPV6_PACKET_TOO_BIG` (IPv6)
+- `PACKET_LOSS`, `QUEUE_OVERFLOW`, `PROCESSING_QUEUE_OVERFLOW`
+- `REASSEMBLY_TIMEOUT`
+- `PORT_UNREACHABLE`, `PORT_CLOSED`
+- `DUPLICATE_MAC`, `DUPLICATE_IP_IN_DOMAIN`, `INVALID_MAC`, `INVALID_PORT`
+- `SIMULATION_LOOP_GUARD`, `EVENT_LIMIT_REACHED`, `SIMULATION_CANCELLED`
+- `UNSUPPORTED_PROTOCOL`, `INVALID_CONFIGURATION`, `LIMIT_EXCEEDED`
+- `NEGATIVE_WEIGHT`, `NEGATIVE_CYCLE`, `UNKNOWN_NODE`
+
 The frontend must render the engine's event stream in order. If event batching or animation interpolation is used, preserve the underlying order and do not change the event semantics.
+
+## 8.4 Transport layer and ports
+
+Per decision D-22:
+1. **Transport Metadata:** Packets carry `{protocol: UDP | TCP | ICMP, srcPort, dstPort, tcpFlags?}`.
+   - Ports are valid in `1..65535` (port `0` is invalid).
+   - Only `UDP` and `TCP` carry ports. `ICMP` and `ARP` carry **no ports**.
+   - `TCP` is metadata only: no three-way handshake, no sequence numbers, and no state machine. The UI displays the note: `"TCP handshake not modeled"`.
+   - Routers and switches never inspect or alter ports.
+2. **Host Services:** Hosts configure listening services: `services: [{protocol, port, label}]`.
+3. **Source Port Allocation:** Taken from the request if provided; otherwise deterministically allocated per host per run from ephemeral range `49152..65535` (wraps from 65535 to 49152).
+4. **Fragmentation:** Only fragment offset 0 carries the transport header; subsequent fragments carry data payload bytes only.
+5. **Destination Demultiplexing:** After IP delivery to the destination host, the host demultiplexes by `(protocol, dstPort)` against its services table:
+   - **Listener found:** Emits event `TRANSPORT_DEMUX`, followed by delivery status `APPLICATION_ACCEPTED`.
+   - **UDP with no listener:** Destination generates an ICMP Destination Unreachable Type 3 Code 3 (Port Unreachable) as a separate packet with reason `PORT_UNREACHABLE`.
+   - **TCP with no listener:** Packet is dropped with reason `PORT_CLOSED` and a visible note: `"A real host would send TCP RST; not modeled"`.
+
+### Golden Event Sequences
+
+#### Scenario A: Same Subnet with Switch (Empty Caches, UDP)
+Topology: Host A `192.168.1.10/24` -> Host B `192.168.1.20/24` via Switch SW, empty caches, UDP.
+1. `A`: `HOST_ROUTE_LOOKUP` (on-link, next hop = 192.168.1.20)
+2. `A`: `ARP_CACHE_MISS` for 192.168.1.20
+3. `A`: `ARP_REQUEST_SENT` (broadcast; who has .20, tell .10)
+4. `SW`: `SWITCH_MAC_LEARNED` (A's MAC), then `SWITCH_FLOODED` (all active ports except ingress)
+5. `B`: `ARP_REQUEST_RECEIVED`, `ARP_CACHE_UPDATED` (A's IP->MAC mapping)
+6. `B`: `ARP_REPLY_SENT` (unicast to A)
+7. `SW`: `SWITCH_MAC_LEARNED` (B's MAC), `SWITCH_FORWARDED` to A's port
+8. `A`: `ARP_REPLY_RECEIVED`, `ARP_CACHE_UPDATED` (.20 -> B's MAC)
+9. `A`: `FRAME_ENCAPSULATED` (dst MAC = B's MAC), packet transmitted
+10. `B`: `PACKET_DELIVERED`; `TRANSPORT_DEMUX`; `APPLICATION_ACCEPTED` (if listener exists)
+
+#### Scenario B: Routed Path (Two Subnets, One Router)
+Topology: Host A `192.168.1.10/24` (gw `192.168.1.1`) -> Router R1 {`192.168.1.1/24`, `10.0.0.1/24`} -> Host B `10.0.0.20/24`.
+- A's ARP target is `192.168.1.1` (the default gateway). A never ARPs for remote destination `10.0.0.20`.
+- R1 receives the frame, decapsulates the packet, performs route lookup, decrements TTL (64 -> 63), and then ARPs for `10.0.0.20` on its egress segment (`10.0.0.0/24`).
+- Frame 1 on link 1: src MAC = A, dst MAC = R1.eth0.
+- Frame 2 on link 2: src MAC = R1.eth1, dst MAC = B.
+- IP src (`192.168.1.10`) and dst (`10.0.0.20`) are unchanged end-to-end.
 
 ---
 

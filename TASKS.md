@@ -192,7 +192,7 @@ These resolve inconsistencies between the three documents. Record each as a shor
 - [ ] M2-04 Host-address validity rules per D-15 (`/31`, `/32`, network/broadcast rejection).
 - [ ] M2-05 On-link test using masks (never "first three octets").
 - [ ] M2-06 IPv6 inputs rejected with a clear `UNSUPPORTED_PROTOCOL`/`INVALID_ADDRESS` message (never parsed as IPv4).
-- [ ] M2-07 MAC type: parse/format, deterministic locally-administered generator (`02:…`), collision check per broadcast domain.
+- [ ] M2-07 MAC type: parse/format (canonical lowercase colon-separated), predicates (isBroadcast, isMulticast, isLocallyAdministered, isValidInterfaceMac), deterministic locally-administered generator (`02:00:NN:NN:II:II`), global topology uniqueness per D-23.
 
 ### M2-B Topology model (`model/topology`)
 - [ ] M2-08 `Node` (host, router, switch, cloudEndpoint), `Interface` (id, name, mac, ipv4/prefix, mtu override, adminState), `Link` per D-02, `Topology` with schema version.
@@ -244,7 +244,17 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [ ] M2-43 Test-only topologies: `ttl-expiry`, `no-route`, `bandwidth-vs-cost`, `mtu-df`, `fragmentation`, `loop`, `lossy`, `link-failover` (two alternate paths).
 - [ ] M2-44 Every example validates clean (or with documented expected warnings) and is shared by C++/backend/frontend tests.
 
-### M2-H Tests
+### M2-H ARP & Transport Additions
+- [ ] M2-45 Interface MAC required and globally unique (validation `DUPLICATE_MAC`); auto-generate when absent; persist on export.
+- [ ] M2-46 AddressRegistry (read-only, built from topology snapshot); findOwnerInDomain(ip, domainId). Duplicate IP in one broadcast domain -> error `DUPLICATE_IP_IN_DOMAIN`.
+- [ ] M2-47 ArpCache per node: lookup/insert/update, source tag, no timers.
+- [ ] M2-48 NextHopResolution decision: nextHopIp, needsArp, cacheHit, explanation built from structured fields.
+- [ ] M2-49 Abstracted resolver: registry lookup scoped to the sender's domain.
+- [ ] M2-50 TransportHeader struct and port validation (1..65535).
+- [ ] M2-51 Host services list in the topology model and validation (duplicate protocol+port on one host -> error).
+- [ ] M2-52 Deterministic ephemeral-port allocator (49152..65535, wraps).
+
+### M2-I Tests
 - [ ] T-2-01 IPv4 parse accepts/rejects table (leading zeros, 256, missing octet, extra octet, empty, whitespace).
 - [ ] T-2-02 Prefix math for `/0 /8 /16 /20 /23 /24 /25 /30 /31 /32`: network, broadcast, mask, contains.
 - [ ] T-2-03 On-link decision correct for `/16`, `/20`, `/23`, `/25` cases (including near-boundary addresses).
@@ -261,6 +271,13 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [ ] T-2-14 GraphBuilder aggregates segment metrics correctly (cost sum, delay sum, bandwidth min, MTU min, loss formula).
 - [ ] T-2-15 Explanations contain the real evidence values for each scenario (assert on structured fields, not only strings).
 - [ ] T-2-16 Property tests: valid IPv4 round-trips; network(addr, prefix) contains addr; broadcast ≥ network.
+- [ ] T-2-17 MAC unique across the whole topology.
+- [ ] T-2-18 Registry lookup returns the owner inside the domain and NOTHING for an IP in another domain.
+- [ ] T-2-19 ArpCache ops (lookup, insert, update, source tag).
+- [ ] T-2-20 Next-hop IP is the gateway for a remote destination and the destination for an on-link one.
+- [ ] T-2-21 Port validation (0 and 65536 rejected).
+- [ ] T-2-22 Allocator determinism and wraparound.
+- [ ] T-2-23 Duplicate service rejected.
 
 **Exit criteria:** same-subnet and gateway scenarios produce correct decisions with correct explanations; validation catches all listed errors; tests pass.
 
@@ -311,7 +328,22 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [ ] M3-30 Events and results serialize to canonical JSON (stable key order, fixed float format) for golden-file tests.
 - [ ] M3-31 Golden event logs checked into `engine/tests/golden/` for scenarios A, B, C, TTL expiry, no-route.
 
-### M3-F Tests
+### M3-F ARP & Transport Modeling
+- [ ] M3-32 ARP frame/message model (kind ARP, EtherType 0x0806).
+- [ ] M3-33 Request build and broadcast per ARP-3.
+- [ ] M3-34 Switch flood and learn for ARP.
+- [ ] M3-35 Owner-only reply, owner learns sender (ARP-5, ARP-6).
+- [ ] M3-36 Requester caches reply and resumes the pending packet.
+- [ ] M3-37 ARP timeout -> `NEXT_HOP_UNRESOLVED`.
+- [ ] M3-38 Second packet in the same run uses `ARP_CACHE_HIT` (no ARP frames).
+- [ ] M3-39 ARP never crosses a router; no TTL on ARP.
+- [ ] M3-40 Router ARP on egress segment including final hop.
+- [ ] M3-41 ARP frames obey link state and loss.
+- [ ] M3-42 Transport demux at the destination and `APPLICATION_ACCEPTED`.
+- [ ] M3-43 UDP closed port -> separate ICMP Port Unreachable; TCP closed -> `PORT_CLOSED` drop with the "RST not modeled" note.
+- [ ] M3-44 ICMP and ARP carry no ports (assert in tests).
+
+### M3-G Tests
 - [ ] T-3-01 TTL boundary table on a 3-router path: TTL = 1, 2, 3, 4, 5, 255. Expect expiry at the correct router (TTL N+1 survives N routers).
 - [ ] T-3-02 Switch never decrements TTL or rewrites IP.
 - [ ] T-3-03 Router decrements exactly once per forwarding; log shows in/out TTL.
@@ -327,8 +359,18 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [ ] T-3-13 `NO_ROUTE` at host vs router distinct, and distinct from forwarding-time failure.
 - [ ] T-3-14 Golden logs match for scenarios A, B, C.
 - [ ] T-3-15 Cloud delivery wording never claims a real AWS resource.
+- [ ] T-3-16 Golden event sequence for Scenario A with empty caches (see NETWORKING_RULES §8.4).
+- [ ] T-3-17 Golden event sequence for Scenario B (see NETWORKING_RULES §8.4).
+- [ ] T-3-18 ARP does not cross the router.
+- [ ] T-3-19 ARP timeout when the target is absent.
+- [ ] T-3-20 Second packet has no ARP events (`ARP_CACHE_HIT`).
+- [ ] T-3-21 MACs rewritten per link, IPs unchanged, and the host ARPs for the GATEWAY (never the remote destination).
+- [ ] T-3-22 UDP open port accepted (`APPLICATION_ACCEPTED`).
+- [ ] T-3-23 UDP closed port gives a separate ICMP Port Unreachable.
+- [ ] T-3-24 TCP closed port gives `PORT_CLOSED`.
+- [ ] T-3-25 Same seed gives identical ARP event logs.
 
-**Exit criteria:** deterministic hop-by-hop event logs; TTL boundary tests pass; ICMP is a separate packet.
+**Exit criteria:** deterministic hop-by-hop event logs; TTL boundary tests pass; ICMP is a separate packet; ARP modeled and cached; transport demux complete.
 
 ---
 
@@ -338,6 +380,9 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 
 ### M4-A Schemas (`schemas/`)
 - [ ] M4-01 `topology.schema.json`, `simulation-request.schema.json`, `simulation-result.schema.json`, `error.schema.json` (JSON Schema 2020-12), each with `schemaVersion`.
+  - Request schema additions: `arpMode` ("modeled"|"abstracted"), `preloadArpCaches` (bool), `arpTimeoutMs` (number), `transport` (`{protocol, srcPort?, dstPort?, tcpFlags?}`).
+  - Topology schema additions: `host.services[]` (`[{protocol, port, label}]`).
+  - Result schema additions: `arpCachesAfter` per node (`[{ip, mac, source}]`) and read-only `addressRegistry` export.
 - [ ] M4-02 Enumerations for node types, algorithms, objectives, protocols, event types, reason codes, adminState.
 - [ ] M4-03 Script `scripts/validate-examples.*` that validates every file in `examples/` against the schemas (runs in CI).
 - [ ] M4-04 Unsupported major version → rejected with clear message; unknown optional fields ignored; unknown required enum values rejected.
@@ -523,12 +568,12 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 ### M7-C MTU, DF, fragmentation, reassembly
 - [ ] M7-14 MTU check at each router egress against **IP total length**; `size == MTU` fits, `MTU+1` needs action. Outcomes enum from `NETWORKING_RULES` §10.5.
 - [ ] M7-15 DF set + too big → drop `MTU_EXCEEDED_DF_SET`; separate ICMP Dest-Unreachable/Frag-Needed (type 3 code 4) if enabled; Path-MTU-Discovery flow documented as educational only.
-- [ ] M7-16 DF clear → fragment: max payload `floor((MTU − 20)/8)*8`; offsets in 8-byte units; MF on all but last; same Identification; per-fragment total length ≤ MTU; payload coverage exact, no gaps/overlap.
+- [ ] M7-16 DF clear → fragment: max payload `floor((MTU − 20)/8)*8`; offsets in 8-byte units; MF on all but last; same Identification; per-fragment total length ≤ MTU; payload coverage exact, no gaps/overlap. Only fragment offset 0 carries the transport header (D-22).
 - [ ] M7-17 Fragments are independent packets (own IDs, `parentId`), each experiences TTL/loss/delay; `FRAGMENT_CREATED` events.
 - [ ] M7-18 Re-fragmentation at a later smaller-MTU link preserves correct MF and offsets.
 - [ ] M7-19 Reassembly **at destination only**: byte-range tracking, consistency checks, timeout (documented ms); events `REASSEMBLY_STARTED/COMPLETED`, `REASSEMBLY_TIMEOUT`; missing fragments listed.
 - [ ] M7-20 Fragment loss → original datagram `REASSEMBLY_FAILED`; siblings never auto-marked delivered.
-- [ ] M7-21 Inspector shows payload length vs IP total length vs frame length distinctly.
+- [ ] M7-21 Inspector shows payload length vs IP total length vs frame length distinctly; shows transport header present only on offset 0.
 
 ### M7-D UI
 - [ ] M7-22 Fault panel: add/remove faults, enable/disable, timing; shows "temporary fault vs permanent edit".
@@ -537,7 +582,7 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [ ] M7-25 Troubleshooting helper: shows the first failing decision and its explanation.
 
 ### M7-E Tests (regression suite)
-- [ ] T-7-01 Fragmentation example 4000/1500/DF0 → payloads 1480/1480/1020, totals 1500/1500/1040, offsets 0/185/370, MF 1/1/0, shared ID.
+- [ ] T-7-01 Fragmentation example 4000/1500/DF0 → payloads 1480/1480/1020, totals 1500/1500/1040, offsets 0/185/370, MF 1/1/0, shared ID; fragment offset 0 contains the transport (UDP 8B) header, subsequent fragments do not (test assert).
 - [ ] T-7-02 Boundary: size == MTU (no fragmentation), MTU+1 (action), MTU 68 minimum edge cases, payload not multiple of 8 on last fragment only.
 - [ ] T-7-03 DF=1 + small MTU → `MTU_EXCEEDED_DF_SET`, original not delivered, ICMP separate.
 - [ ] T-7-04 Re-fragmentation across 1500 → 1000 → 576 gives valid non-overlapping coverage.
@@ -651,12 +696,14 @@ Each row needs: example file, C++ integration test, API test, e2e/UI test, golde
 
 ### 13.1 Event types
 
-- [ ] `RUN_STARTED` `PACKET_CREATED` `HOST_ROUTE_LOOKUP` `NEIGHBOR_RESOLVED_ABSTRACTED` `ARP_REQUIRED` (only if ARP modeled) `FRAME_ENCAPSULATED`
+- [ ] `RUN_STARTED` `PACKET_CREATED` `HOST_ROUTE_LOOKUP` `NEIGHBOR_RESOLVED_ABSTRACTED` `FRAME_ENCAPSULATED`
+- [ ] `ARP_CACHE_HIT` `ARP_CACHE_MISS` `ARP_REQUEST_SENT` `ARP_REQUEST_RECEIVED` `ARP_REPLY_SENT` `ARP_REPLY_RECEIVED` `ARP_CACHE_UPDATED` `ARP_RESOLUTION_FAILED`
 - [ ] `SWITCH_MAC_LEARNED` `SWITCH_FORWARDED` `SWITCH_FLOODED`
 - [ ] `ROUTE_LOOKUP` `ROUTE_SELECTED` `NO_ROUTE` `NO_FEASIBLE_ROUTE`
 - [ ] `PACKET_QUEUED` `LINK_TRANSMIT_STARTED` `LINK_RECEIVE` `PACKET_FORWARDED`
 - [ ] `TTL_DECREMENTED` `TTL_EXPIRED`
 - [ ] `ICMP_GENERATED`
+- [ ] `TRANSPORT_DEMUX`
 - [ ] `FRAGMENT_CREATED` `FRAGMENT_DROPPED` `REASSEMBLY_STARTED` `REASSEMBLY_COMPLETED`
 - [ ] `FAULT_ACTIVATED` `FAULT_CLEARED`
 - [ ] `PACKET_DELIVERED` `PACKET_DROPPED`
@@ -671,6 +718,8 @@ Each row needs: example file, C++ integration test, API test, e2e/UI test, golde
 - [ ] `MTU_EXCEEDED_DF_SET` `IPV6_PACKET_TOO_BIG` (IPv6 only)
 - [ ] `PACKET_LOSS` `QUEUE_OVERFLOW` `PROCESSING_QUEUE_OVERFLOW`
 - [ ] `REASSEMBLY_TIMEOUT`
+- [ ] `PORT_UNREACHABLE` `PORT_CLOSED`
+- [ ] `DUPLICATE_MAC` `DUPLICATE_IP_IN_DOMAIN` `INVALID_MAC` `INVALID_PORT`
 - [ ] `SIMULATION_LOOP_GUARD` `EVENT_LIMIT_REACHED` `SIMULATION_CANCELLED`
 - [ ] `UNSUPPORTED_PROTOCOL` `INVALID_CONFIGURATION` `LIMIT_EXCEEDED`
 - [ ] `NEGATIVE_WEIGHT` `NEGATIVE_CYCLE` `UNKNOWN_NODE`
@@ -680,6 +729,9 @@ Each row needs: example file, C++ integration test, API test, e2e/UI test, golde
 
 ### 13.4 Delivery statuses
 - [ ] `IP_DELIVERED` `APPLICATION_ACCEPTED` (only if app modeled) `RESPONSE_GENERATED` `RESPONSE_DELIVERED`
+
+### 13.5 Packet kinds
+- [ ] `IP` `ARP`
 
 ---
 

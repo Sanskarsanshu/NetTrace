@@ -49,9 +49,11 @@ This document records the foundational architectural decisions locked before cod
   2. Scheduled arrival time at the receiving interface.
   - If the link becomes inactive during transit, the packet is dropped with reason `LINK_DOWN`.
 
-## D-08: Abstracted ARP Resolution
-- **Decision:** Version 1 abstracts ARP exchanges: next-hop Layer-2 MAC address resolution is deterministic and instantaneous, emitting an explicit `NEIGHBOR_RESOLVED_ABSTRACTED` event.
-- **Rationale:** Focuses learning on IP routing and forwarding without overwhelming students with ARP cache state machines.
+## D-08: Abstracted ARP Resolution (Superseded by D-21)
+- **Status:** Superseded by **D-21** (ARP and Neighbor Resolution Model).
+- **Original Decision:** Version 1 abstracts ARP exchanges: next-hop Layer-2 MAC address resolution is deterministic and instantaneous, emitting an explicit `NEIGHBOR_RESOLVED_ABSTRACTED` event.
+- **Current Model:** D-21 introduces modeled ARP with per-node `ArpCache`, switch broadcast flooding, and unicast replies as default (`arpMode: "modeled"`), while retaining the D-08 registry lookup under `arpMode: "abstracted"`.
+- **Rationale:** Preserves educational accessibility while providing students with full visibility into ARP discovery frames and cache behavior.
 
 ## D-09: Transparent Learning Bridge Model
 - **Decision:** Switches operate as 802.1D transparent learning bridges:

@@ -39,3 +39,26 @@ This document tracks all networking rules, architectural constraints, and functi
 | MTU check, DF drop, and IPv4 fragmentation | NR §10, PROJECT §8 | `engine/simulation/mtu` | T-8-03, T-8-04 | planned |
 | Reassembly at destination only | NR §10.2 | `engine/simulation/reassembly` | T-8-05 | planned |
 | 3D view renders same state as 2D | PROJECT §10.2 | `frontend/src/features/3d` | T-9-01 | planned |
+| ARP-1: Next-hop IP resolved, never remote dest | NR §5.4, D-21 | `engine/simulation/arp` | T-3-21 | planned |
+| ARP-2: ARP cache hit skips ARP frames | NR §5.4, D-21 | `engine/simulation/arp` | T-3-20 | planned |
+| ARP-3: ARP cache miss broadcasts request | NR §5.4, D-21 | `engine/simulation/arp` | T-3-16 | planned |
+| ARP-4: Switch floods broadcast & learns source MAC | NR §5.4, D-21 | `engine/simulation/switch` | T-3-16 | planned |
+| ARP-5: Only owner replies to ARP request | NR §5.4, D-21 | `engine/simulation/arp` | T-3-16, T-3-19 | planned |
+| ARP-6: Target updates cache & sends unicast reply | NR §5.4, D-21 | `engine/simulation/arp` | T-3-16 | planned |
+| ARP-7: Requester caches reply & transmits data frame | NR §5.4, D-21 | `engine/simulation/arp` | T-3-16 | planned |
+| ARP-8: ARP timeout drops with NEXT_HOP_UNRESOLVED | NR §5.4, D-21 | `engine/simulation/arp` | T-3-19 | planned |
+| ARP-9: ARP frames distinct, parentId, obey link/loss | NR §5.4, D-21 | `engine/simulation/arp` | T-3-16, T-3-25 | planned |
+| ARP-10: Routers ARP on egress segment to destination | NR §5.4, D-21 | `engine/simulation/router` | T-3-17 | planned |
+| ARP-11: Unmodeled ARP features labeled in UI | NR §5.4, D-21 | `engine/simulation/arp` | M3-44 / UI | planned |
+| Transport: Port range 1..65535 validation | NR §8.4, D-22 | `engine/model/transport` | T-2-21 | planned |
+| Transport: Host services list & validation | NR §8.4, D-22 | `engine/model/topology` | T-2-23 | planned |
+| Transport: Deterministic ephemeral allocator | NR §8.4, D-22 | `engine/simulation/transport` | T-2-22 | planned |
+| Transport: Demux listener -> APPLICATION_ACCEPTED | NR §8.4, D-22 | `engine/simulation/host` | T-3-22 | planned |
+| Transport: UDP closed port -> ICMP Port Unreachable | NR §8.4, D-22 | `engine/simulation/host` | T-3-23 | planned |
+| Transport: TCP closed port -> PORT_CLOSED drop | NR §8.4, D-22 | `engine/simulation/host` | T-3-24 | planned |
+| Transport: ICMP and ARP carry no ports | NR §8.4, D-22 | `engine/packet/` | M3-44 | planned |
+| MAC: Globally unique mock MAC across topology | NR §5.1, D-23 | `engine/model/mac` | T-2-17 | planned |
+| MAC: Generator 02:00:NN:NN:II:II determinism | NR §5.1, D-23 | `engine/model/mac` | T-2-16 | planned |
+| Registry: Scoped domain lookup in AddressRegistry | NR §5.4, D-21 | `engine/model/registry` | T-2-18 | planned |
+| Cache: Per-node ArpCache operations | NR §5.4, D-21 | `engine/model/arp_cache` | T-2-19 | planned |
+

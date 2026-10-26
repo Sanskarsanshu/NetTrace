@@ -21,7 +21,8 @@
 | Local vs. Gateway Subnet Decision | planned | M2 |
 | Longest Prefix Match (LPM) FIB Lookup | planned | M2 |
 | Simulated Transparent Learning Bridge | planned | M2 (STP not modeled) |
-| ARP Neighbor Resolution | not modeled | Deterministic abstracted resolution labeled as such |
+| ARP Neighbor Resolution | planned | M3 (Modeled ARP with per-node caches; aging, retries, gratuitous/proxy ARP = not modeled; abstracted mode supported) |
+| Transport Layer & UDP Demux | planned | M3 (Ports 1..65535, host services, ICMP Port Unreachable on closed port) |
 | Packet Lifecycle & State Machine | planned | M3 |
 | Router IPv4 TTL Decrement & Boundary Check | planned | M3 |
 | ICMP Time Exceeded Response Generation | planned | M3 (Separate simulated packet) |
@@ -43,7 +44,7 @@
 | 3D Topology Visualization (Three.js / R3F) | planned | M9 |
 | Simulated Cloud / EC2 Endpoint | planned | Labeled "Simulated endpoint", no real AWS credentials |
 | Linux netns / Wireshark Validation | planned | Opt-in educational guide |
-| Full TCP State Machine & Congestion Control | not modeled | Deliberately educational scope |
+| TCP Handshake & State Machine | not modeled | Transport metadata only; "TCP handshake not modeled"; TCP closed port drops with PORT_CLOSED |
 | IPv6 Routing & Headers | not modeled | Rejected with explicit error code |
 | NAT / Firewall / ACL / VLAN / MPLS | not modeled | Future extension |
 | Dynamic Routing Protocols (OSPF / BGP / RIP) | not modeled | Bellman-Ford algorithm is NOT a RIP implementation |
