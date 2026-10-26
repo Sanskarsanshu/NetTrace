@@ -25,21 +25,39 @@ TEST_CASE("T-1-04: Bellman-Ford handles negative edges without cycles") {
 }
 
 TEST_CASE("T-1-05: Bellman-Ford detects reachable negative cycle") {
-    Graph g;
-    REQUIRE(g.addNode(NodeId("A")).isOk());
-    REQUIRE(g.addNode(NodeId("B")).isOk());
-    REQUIRE(g.addNode(NodeId("C")).isOk());
+    // 1. Directed negative cycle: B -> C (1), C -> B (-2)
+    {
+        Graph g;
+        REQUIRE(g.addNode(NodeId("A")).isOk());
+        REQUIRE(g.addNode(NodeId("B")).isOk());
+        REQUIRE(g.addNode(NodeId("C")).isOk());
 
-    // Cycle: B -> C (cost 1), C -> B (cost -2) => total cycle cost -1
-    // Connected from A -> B (cost 2)
-    REQUIRE(g.addLink({LinkId("l_ab"), NodeId("A"), NodeId("B"), InterfaceId("e1"), InterfaceId("e1"), 2.0}, Directionality::Directed).isOk());
-    REQUIRE(g.addLink({LinkId("l_bc"), NodeId("B"), NodeId("C"), InterfaceId("e2"), InterfaceId("e1"), 1.0}, Directionality::Directed).isOk());
-    REQUIRE(g.addLink({LinkId("l_cb"), NodeId("C"), NodeId("B"), InterfaceId("e2"), InterfaceId("e3"), -2.0}, Directionality::Directed).isOk());
+        // Cycle: B -> C (cost 1), C -> B (cost -2) => total cycle cost -1
+        // Connected from A -> B (cost 2)
+        REQUIRE(g.addLink({LinkId("l_ab"), NodeId("A"), NodeId("B"), InterfaceId("e1"), InterfaceId("e1"), 2.0}, Directionality::Directed).isOk());
+        REQUIRE(g.addLink({LinkId("l_bc"), NodeId("B"), NodeId("C"), InterfaceId("e2"), InterfaceId("e1"), 1.0}, Directionality::Directed).isOk());
+        REQUIRE(g.addLink({LinkId("l_cb"), NodeId("C"), NodeId("B"), InterfaceId("e2"), InterfaceId("e3"), -2.0}, Directionality::Directed).isOk());
 
-    auto result = BellmanFord::findPath(g, NodeId("A"), NodeId("C"));
-    REQUIRE_FALSE(result.reachable);
-    REQUIRE_EQ(result.failureCode, ErrorCode::NegativeCycle);
-    REQUIRE(result.cycleNodeIds.size() >= 2);
+        auto result = BellmanFord::findPath(g, NodeId("A"), NodeId("C"));
+        REQUIRE_FALSE(result.reachable);
+        REQUIRE_EQ(result.failureCode, ErrorCode::NegativeCycle);
+        REQUIRE(result.cycleNodeIds.size() >= 2);
+    }
+
+    // 2. Bidirectional negative edge creates a 2-cycle and emits warning (M1-20)
+    {
+        Graph g;
+        REQUIRE(g.addNode(NodeId("A")).isOk());
+        REQUIRE(g.addNode(NodeId("B")).isOk());
+
+        Edge negBiEdge{LinkId("l_bi_neg"), NodeId("A"), NodeId("B"), InterfaceId("e1"), InterfaceId("e1"), -5.0};
+        REQUIRE(g.addLink(negBiEdge, Directionality::Bidirectional).isOk());
+
+        auto result = BellmanFord::findPath(g, NodeId("A"), NodeId("B"));
+        REQUIRE_FALSE(result.reachable);
+        REQUIRE_EQ(result.failureCode, ErrorCode::NegativeCycle);
+        REQUIRE(result.warnings.size() >= 1);
+    }
 }
 
 TEST_CASE("T-1-06: Bellman-Ford ignores unreachable negative cycle") {

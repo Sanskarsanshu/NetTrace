@@ -4,6 +4,33 @@ This document tracks all networking rules, architectural constraints, and functi
 
 ---
 
+## Milestone 1 Test Execution Mapping (T-1-01 .. T-1-18)
+
+| Test ID | Test Name | File | Status |
+|---|---|---|---|
+| T-1-01 | Dijkstra min-cost path & tie-breaking | `engine/tests/test_dijkstra.cpp` | passed |
+| T-1-02 | Dijkstra negative weight rejection | `engine/tests/test_dijkstra.cpp` | passed |
+| T-1-03 | BFS shortest hop & zero-cost links | `engine/tests/test_bfs.cpp` | passed |
+| T-1-04 | Bellman-Ford negative edge handling | `engine/tests/test_bellman_ford.cpp` | passed |
+| T-1-05 | Bellman-Ford reachable negative cycle detection | `engine/tests/test_bellman_ford.cpp` | passed |
+| T-1-06 | Bellman-Ford unreachable negative cycle tolerance | `engine/tests/test_bellman_ford.cpp` | passed |
+| T-1-07 | Widest-path bottleneck capacity maximization | `engine/tests/test_widest_path.cpp` | passed |
+| T-1-08 | Unreachable destination handling | `engine/tests/test_graph.cpp` | passed |
+| T-1-09 | Source == destination edge cases | `engine/tests/test_graph.cpp` | passed |
+| T-1-10 | Parallel edges & link ID tracking | `engine/tests/test_graph.cpp` | passed |
+| T-1-11 | Directed vs bidirectional link traversal | `engine/tests/test_graph.cpp` | passed |
+| T-1-12 | Inactive node and link filtering | `engine/tests/test_graph.cpp` | passed |
+| T-1-13 | Tie-breaking determinism across 100 permutations | `engine/tests/test_graph.cpp` | passed |
+| T-1-14 | Cross-algorithm consistency property | `engine/tests/test_graph.cpp` | passed |
+| T-1-15 | BFS hop optimality property | `engine/tests/test_graph.cpp` | passed |
+| T-1-16 | Widest-path bottleneck optimality property | `engine/tests/test_graph.cpp` | passed |
+| T-1-17 | Graph validation rejects malformed graphs | `engine/tests/test_graph.cpp` | passed |
+| T-1-18 | Memory safety under ASan and UBSan | `engine/` | pending: Linux CI |
+
+---
+
+## Requirements & Networking Rules Traceability
+
 | Rule / Requirement | Source | Target Module | Test IDs | Status |
 |---|---|---|---|---|
 | Dijkstra picks min-cost path over fewer hops | NR §7.2, PROJECT §6.2 | `engine/routing/dijkstra` | T-1-01 | implemented |
@@ -25,13 +52,13 @@ This document tracks all networking rules, architectural constraints, and functi
 | Graph validation rejects malformed graphs | TASKS M1-17 | `engine/routing/graph` | T-1-17 | implemented |
 | Memory safety under ASan/UBSan | TASKS M1-18 | `engine/` | T-1-18 | pending: runs on Linux CI |
 | IPv4 strict parsing, prefix math & on-link decision | NR §4.2, D-15 | `engine/model/ipv4` | T-2-01, T-2-02, T-2-03, T-2-16 | implemented |
-| MAC address format, predicates & deterministic generator | NR §5.3, D-23 | `engine/model/mac` | T-2-MAC | implemented |
-| Same-subnet delivery avoids default gateway | NR §4.2, PROJECT §4.1 | `engine/forwarding/host_decision` | T-2-03 | planned |
-| Gateway must be on directly connected subnet | NR §4.3 | `engine/model/validate` | T-2-04 | planned |
-| Longest Prefix Match (LPM) FIB lookup + tie-breaks | NR §6.2 | `engine/forwarding/fib` | T-2-05, T-2-06 | planned |
-| Learning switch MAC table (never touches TTL/IP) | NR §5.2 | `engine/simulation/switch` | T-2-07, T-2-08 | planned |
+| MAC address format, predicates & deterministic generator | NR §5.3, D-23 | `engine/model/mac` | T-2-24 | implemented |
+| Same-subnet delivery avoids default gateway | NR §4.2, PROJECT §4.1 | `engine/forwarding/host_decision` | T-2-04 | planned |
+| Gateway must be on directly connected subnet | NR §4.3 | `engine/model/validate` | T-2-06 | planned |
+| Longest Prefix Match (LPM) FIB lookup + tie-breaks | NR §6.2 | `engine/forwarding/fib` | T-2-07, T-2-08 | planned |
+| Learning switch MAC table (never touches TTL/IP) | NR §5.2 | `engine/simulation/switch` | T-2-12 | planned |
 | Router rewrites L2 MAC frame per outgoing link | NR §5.3, PROJECT §7.6 | `engine/simulation/router` | T-2-09 | planned |
-| Topology validation (IDs, subnets, interfaces) | PROJECT §5.4 | `engine/model/validate` | T-2-10 | planned |
+| Topology validation (IDs, subnets, interfaces) | PROJECT §5.4 | `engine/model/validate` | T-2-13 | planned |
 | IPv4 TTL decrement order (receive 1 -> drop; else dec) | NR §9.1 | `engine/simulation/router` | T-3-01, T-3-02 | planned |
 | Router-addressed packet not decremented | NR §9.1.8 | `engine/simulation/router` | T-3-03 | planned |
 | ICMP Time Exceeded is separate packet & route | NR §9.4, PROJECT §7.4 | `engine/packet/icmp` | T-3-04, T-3-05 | planned |
@@ -68,7 +95,7 @@ This document tracks all networking rules, architectural constraints, and functi
 | Transport: TCP closed port -> PORT_CLOSED drop | NR §8.4, D-22 | `engine/simulation/host` | T-3-24 | planned |
 | Transport: ICMP and ARP carry no ports | NR §8.4, D-22 | `engine/packet/` | M3-44 | planned |
 | MAC: Globally unique mock MAC across topology | NR §5.1, D-23 | `engine/model/mac` | T-2-17 | planned |
-| MAC: Generator 02:00:NN:NN:II:II determinism | NR §5.1, D-23 | `engine/model/mac` | T-2-16 | planned |
+| MAC: Generator 02:00:NN:NN:II:II determinism | NR §5.1, D-23 | `engine/model/mac` | T-2-24 | implemented |
 | Registry: Scoped domain lookup in AddressRegistry | NR §5.4, D-21 | `engine/model/registry` | T-2-18 | planned |
 | Cache: Per-node ArpCache operations | NR §5.4, D-21 | `engine/model/arp_cache` | T-2-19 | planned |
 

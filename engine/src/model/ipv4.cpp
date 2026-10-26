@@ -161,6 +161,17 @@ bool IPv4Subnet::isValidHost(const IPv4Address& addr) const {
     return addr != network() && addr != broadcast();
 }
 
+std::pair<IPv4Address, IPv4Address> IPv4Subnet::hostRange() const {
+    if (prefixLength_ == 32) {
+        return {network(), network()};
+    }
+    if (prefixLength_ == 31) {
+        return {network(), broadcast()};
+    }
+    // /0../30: first usable is network + 1, last usable is broadcast - 1
+    return {IPv4Address(network().toUint32() + 1u), IPv4Address(broadcast().toUint32() - 1u)};
+}
+
 std::string IPv4Subnet::toString() const {
     return address_.toString() + "/" + std::to_string(prefixLength_);
 }

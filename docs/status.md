@@ -18,7 +18,7 @@
 | Widest-Path Bottleneck Bandwidth Algorithm | implemented | M1 (Max-heap bottleneck bandwidth, tie-breaking) |
 | Topology Data Model & Graph Builder | planned | M2 |
 | IPv4 Subnetting & CIDR Calculation | implemented | M2-A (Strict parsing, canonical formatting, prefix math, D-15 host validity) |
-| MAC Addressing & Generator | implemented | M2-A (Colon-separated, predicates, deterministic generator D-23) |
+| MAC Addressing & Generator | implemented | M2-A (Colon-separated, predicates, deterministic generator D-23; T-2-24) |
 | Local vs. Gateway Subnet Decision | planned | M2 |
 | Longest Prefix Match (LPM) FIB Lookup | planned | M2 |
 | Simulated Transparent Learning Bridge | planned | M2 (STP not modeled) |

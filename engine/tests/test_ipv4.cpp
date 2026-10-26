@@ -99,6 +99,9 @@ TEST_CASE("T-2-01: IPv4 accept/reject table and canonical round-trip") {
             EXPECT_FALSE(sub.isValidHost(IPv4Address::parse("10.0.0.4").value())); // network
             EXPECT_FALSE(sub.isValidHost(IPv4Address::parse("10.0.0.7").value())); // broadcast
             EXPECT_FALSE(sub.isValidHost(IPv4Address::parse("10.0.0.8").value())); // outside
+            auto range = sub.hostRange();
+            EXPECT_EQ(range.first.toString(), "10.0.0.5");
+            EXPECT_EQ(range.second.toString(), "10.0.0.6");
         }
 
         // 10.0.0.0/31: both 10.0.0.0 and 10.0.0.1 are valid hosts (RFC 3021)
@@ -110,6 +113,9 @@ TEST_CASE("T-2-01: IPv4 accept/reject table and canonical round-trip") {
             EXPECT_TRUE(sub.isValidHost(IPv4Address::parse("10.0.0.0").value()));
             EXPECT_TRUE(sub.isValidHost(IPv4Address::parse("10.0.0.1").value()));
             EXPECT_FALSE(sub.isValidHost(IPv4Address::parse("10.0.0.2").value()));
+            auto range = sub.hostRange();
+            EXPECT_EQ(range.first.toString(), "10.0.0.0");
+            EXPECT_EQ(range.second.toString(), "10.0.0.1");
         }
 
         // 10.9.9.9/32: mask 255.255.255.255, contains only 10.9.9.9
@@ -122,6 +128,9 @@ TEST_CASE("T-2-01: IPv4 accept/reject table and canonical round-trip") {
             EXPECT_FALSE(sub.contains(IPv4Address::parse("10.9.9.8").value()));
             EXPECT_TRUE(sub.isValidHost(IPv4Address::parse("10.9.9.9").value()));
             EXPECT_FALSE(sub.isValidHost(IPv4Address::parse("10.9.9.8").value()));
+            auto range = sub.hostRange();
+            EXPECT_EQ(range.first.toString(), "10.9.9.9");
+            EXPECT_EQ(range.second.toString(), "10.9.9.9");
         }
 
         // x.x.x.x/0: mask 0.0.0.0, contains every address

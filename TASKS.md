@@ -278,6 +278,7 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [ ] T-2-21 Port validation (0 and 65536 rejected).
 - [ ] T-2-22 Allocator determinism and wraparound.
 - [ ] T-2-23 Duplicate service rejected.
+- [x] T-2-24 MAC parse/format canonical lowercase, predicates, deterministic generator, uniqueness across 100 combinations.
 
 **Exit criteria:** same-subnet and gateway scenarios produce correct decisions with correct explanations; validation catches all listed errors; tests pass.
 

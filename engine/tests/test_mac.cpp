@@ -4,7 +4,7 @@
 
 using namespace nettrace;
 
-TEST_CASE("T-2-MAC: MAC parse, format, predicates, generator, and uniqueness") {
+TEST_CASE("T-2-24: MAC parse, format, predicates, generator, and uniqueness") {
         // ACCEPT as interface MAC
         {
             auto res1 = MacAddress::parse("02:00:00:00:00:01");

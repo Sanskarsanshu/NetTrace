@@ -98,6 +98,14 @@ public:
      */
     bool isValidHost(const IPv4Address& addr) const;
 
+    /**
+     * @brief Returns the first and last usable host addresses in the subnet per D-15.
+     * /32: (network, network)
+     * /31: (network, broadcast)
+     * /0../30: (network + 1, broadcast - 1)
+     */
+    std::pair<IPv4Address, IPv4Address> hostRange() const;
+
     std::string toString() const;
 
     /**
