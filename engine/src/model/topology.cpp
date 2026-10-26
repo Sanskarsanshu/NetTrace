@@ -56,7 +56,8 @@ bool Node::operator==(const Node& o) const {
            defaultGateway == o.defaultGateway && services == o.services &&
            forwardingEnabled == o.forwardingEnabled &&
            processingDelayMs == o.processingDelayMs &&
-           simulated == o.simulated;
+           simulated == o.simulated &&
+           staticRoutes == o.staticRoutes;
 }
 
 bool Link::operator==(const Link& o) const {
@@ -272,6 +273,14 @@ static std::string buildCanonicalText(const std::vector<Node>& nodes, const std:
                << (iface.mtuBytes.has_value() ? std::to_string(*iface.mtuBytes) : "")
                << "\n";
         }
+
+        for (const auto& sr : node.staticRoutes) {
+            ss << "ROUTE:" << sr.prefix.toString() << "|"
+               << (sr.nextHop.has_value() ? sr.nextHop->toString() : "") << "|"
+               << (sr.outInterface.has_value() ? sr.outInterface->str() : "") << "|"
+               << sr.adminPreference << "|"
+               << sr.metric << "\n";
+        }
     }
 
     for (const auto& link : links) {
@@ -322,6 +331,26 @@ Result<TopologySnapshot> TopologySnapshot::freeze(TopologyDraft draft, const Val
                 return static_cast<int>(a.protocol) < static_cast<int>(b.protocol);
             }
             return a.port < b.port;
+        });
+        std::sort(node.staticRoutes.begin(), node.staticRoutes.end(), [](const StaticRoute& a, const StaticRoute& b) {
+            if (a.prefix.prefixLength() != b.prefix.prefixLength()) {
+                return a.prefix.prefixLength() > b.prefix.prefixLength();
+            }
+            if (a.prefix.address() != b.prefix.address()) {
+                return a.prefix.address() < b.prefix.address();
+            }
+            if (a.nextHop != b.nextHop) {
+                if (!a.nextHop.has_value()) return true;
+                if (!b.nextHop.has_value()) return false;
+                return a.nextHop->toUint32() < b.nextHop->toUint32();
+            }
+            if (a.outInterface != b.outInterface) {
+                return a.outInterface < b.outInterface;
+            }
+            if (a.adminPreference != b.adminPreference) {
+                return a.adminPreference < b.adminPreference;
+            }
+            return a.metric < b.metric;
         });
     }
 

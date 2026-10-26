@@ -73,6 +73,20 @@ struct Interface {
     }
 };
 
+struct StaticRoute {
+    IPv4Subnet prefix;
+    std::optional<IPv4Address> nextHop;
+    std::optional<InterfaceId> outInterface;
+    uint32_t adminPreference = 1;
+    uint32_t metric = 0;
+
+    bool operator==(const StaticRoute& o) const {
+        return prefix == o.prefix && nextHop == o.nextHop &&
+               outInterface == o.outInterface &&
+               adminPreference == o.adminPreference && metric == o.metric;
+    }
+};
+
 struct Node {
     NodeId id;
     std::string name;
@@ -90,6 +104,9 @@ struct Node {
 
     // CloudEndpoint
     bool simulated = false;
+
+    // Static routes (configured on host, router, or cloud endpoint)
+    std::vector<StaticRoute> staticRoutes;
 
     const Interface* findInterface(const InterfaceId& ifaceId) const;
     Interface* findInterface(const InterfaceId& ifaceId);

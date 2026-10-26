@@ -223,15 +223,15 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [x] M2-28 Switch MAC table structure: learn, move, lookup, flood set computation, exclude ingress port, exclude down ports.
 
 ### M2-E Routing/forwarding tables (`forwarding/`)
-- [ ] M2-29 `Route` struct: prefix, nextHop (nullable = connected), outInterface, source (`connected|static|default|policy`), adminPreference, metric, valid flag, stable routeId.
-- [ ] M2-30 Auto-install connected routes for each active addressed interface.
-- [ ] M2-31 Host default gateway → default route (`0.0.0.0/0`).
-- [ ] M2-32 Static route support with validation (next hop must be on-link per D-20).
-- [ ] M2-33 **Longest-prefix match** with D-19 tie-breaking; usability check (interface up, next hop resolvable).
-- [ ] M2-34 Host send decision: on-link → direct; off-link → gateway; none → `NO_ROUTE`; gateway invalid → `INVALID_GATEWAY`/`GATEWAY_UNREACHABLE`.
-- [ ] M2-35 Router decision: destination is one of my addresses → local delivery; else LPM → outgoing interface + next hop; none → `NO_ROUTE`.
-- [ ] M2-36 `Decision` struct carrying all evidence (matched prefix, candidates considered, rejected candidates + reason, chosen interface/next hop).
-- [ ] M2-37 **Explanation generator** that builds text from the `Decision` struct (never hard-coded success text). Must cover the example sentences in `PROJECT.md` §11.4 and `NETWORKING_RULES.md` §23.
+- [x] M2-29 `Route` struct: prefix, nextHop (nullable = connected), outInterface, source (`connected|static|default|policy`), adminPreference, metric, valid flag, stable routeId.
+- [x] M2-30 Auto-install connected routes for each active addressed interface.
+- [x] M2-31 Host default gateway → default route (`0.0.0.0/0`).
+- [x] M2-32 Static route support with validation (next hop must be on-link per D-20).
+- [x] M2-33 **Longest-prefix match** with D-19 tie-breaking; usability check (interface up, next hop resolvable).
+- [x] M2-34 Host send decision: on-link → direct; off-link → gateway; none → `NO_ROUTE`; gateway invalid → `INVALID_GATEWAY`/`GATEWAY_UNREACHABLE`.
+- [x] M2-35 Router decision: destination is one of my addresses → local delivery; else LPM → outgoing interface + next hop; none → `NO_ROUTE`.
+- [x] M2-36 `Decision` struct carrying all evidence (matched prefix, candidates considered, rejected candidates + reason, chosen interface/next hop).
+- [x] M2-37 **Explanation generator** that builds text from the `Decision` struct (never hard-coded success text). Must cover the example sentences in `PROJECT.md` §11.4 and `NETWORKING_RULES.md` §23.
 
 ### M2-F Graph building and path→FIB bridge
 - [ ] M2-38 `GraphBuilder`: topology → L3 graph per D-17 with correct segment metric aggregation; inactive things excluded and recorded as exclusions with reasons.
@@ -248,38 +248,40 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [x] M2-45 Interface MAC required and globally unique (validation `DUPLICATE_MAC`); auto-generate when absent; persist on export.
 - [x] M2-46 AddressRegistry (read-only, built from topology snapshot); findOwnerInDomain(ip, domainId). Duplicate IP in one broadcast domain -> error `DUPLICATE_IP_IN_DOMAIN`.
 - [x] M2-47 ArpCache per node: lookup/insert/update, source tag, no timers.
-- [ ] M2-48 NextHopResolution decision: nextHopIp, needsArp, cacheHit, explanation built from structured fields.
+- [x] M2-48 NextHopResolution decision: nextHopIp, needsArp, cacheHit, explanation built from structured fields.
 - [x] M2-49 Abstracted resolver: registry lookup scoped to the sender's domain.
 - [x] M2-50 TransportHeader struct and port validation (1..65535).
 - [x] M2-51 Host services list in the topology model and validation (duplicate protocol+port on one host -> error).
-- [ ] M2-52 Deterministic ephemeral-port allocator (49152..65535, wraps).
+- [x] M2-52 Deterministic ephemeral-port allocator (49152..65535, wraps).
 
 ### M2-I Tests
 - [x] T-2-01 IPv4 parse accepts/rejects table (leading zeros, 256, missing octet, extra octet, empty, whitespace).
 - [x] T-2-02 Prefix math for `/0 /8 /16 /20 /23 /24 /25 /30 /31 /32`: network, broadcast, mask, contains.
 - [x] T-2-03 On-link decision correct for `/16`, `/20`, `/23`, `/25` cases (including near-boundary addresses).
-- [ ] T-2-04 Host in same subnet does not use gateway.
-- [ ] T-2-05 Host in different subnet uses default gateway; destination IP unchanged in decision.
-- [ ] T-2-06 No gateway + off-link → `NO_ROUTE`; gateway off-subnet → `GATEWAY_UNREACHABLE`.
-- [ ] T-2-07 LPM: `0.0.0.0/0`, `10.0.0.0/8`, `10.4.0.0/16` for `10.4.7.9` picks `/16`; default doesn't beat specific by lower metric.
-- [ ] T-2-08 Tie-break determinism (equal prefix/pref/metric → lowest routeId).
-- [ ] T-2-09 Router chooses correct outgoing interface and next hop on all starter topologies.
-- [ ] T-2-10 Router recognizes packet addressed to itself as local.
-- [ ] T-2-11 Down interface/link makes a route unusable.
+- [x] T-2-04 Host in same subnet does not use gateway.
+- [x] T-2-05 Host in different subnet uses default gateway; destination IP unchanged in decision.
+- [x] T-2-06 No gateway + off-link → `NO_ROUTE`; gateway off-subnet → `GATEWAY_UNREACHABLE`.
+- [x] T-2-07 LPM: `0.0.0.0/0`, `10.0.0.0/8`, `10.4.0.0/16` for `10.4.7.9` picks `/16`; default doesn't beat specific by lower metric.
+- [x] T-2-08 Tie-break determinism (equal prefix/pref/metric → lowest routeId).
+- [x] T-2-09 Router chooses correct outgoing interface and next hop on all starter topologies.
+- [x] T-2-10 Router recognizes packet addressed to itself as local.
+- [x] T-2-11 Down interface/link makes a route unusable.
 - [x] T-2-12 Switch learn/forward/flood/move logic; never flood to ingress; never flood to down ports.
 - [x] T-2-13 Every validation rule M2-12…M2-24 has a failing-fixture test and a passing-fixture test.
 - [ ] T-2-14 GraphBuilder aggregates segment metrics correctly (cost sum, delay sum, bandwidth min, MTU min, loss formula).
-- [ ] T-2-15 Explanations contain the real evidence values for each scenario (assert on structured fields, not only strings).
+- [x] T-2-15 Explanations contain the real evidence values for each scenario (assert on structured fields, not only strings).
 - [x] T-2-16 Property tests: valid IPv4 round-trips; network(addr, prefix) contains addr; broadcast ≥ network.
 - [x] T-2-17 MAC unique across the whole topology.
 - [x] T-2-18 Registry lookup returns the owner inside the domain and NOTHING for an IP in another domain.
 - [x] T-2-19 ArpCache ops (lookup, insert, update, source tag).
-- [ ] T-2-20 Next-hop IP is the gateway for a remote destination and the destination for an on-link one.
+- [x] T-2-20 Next-hop IP is the gateway for a remote destination and the destination for an on-link one.
 - [x] T-2-21 Port validation (0 and 65536 rejected).
-- [ ] T-2-22 Allocator determinism and wraparound.
+- [x] T-2-22 Allocator determinism and wraparound.
 - [x] T-2-23 Duplicate service rejected.
 - [x] T-2-24 MAC parse/format canonical lowercase, predicates, deterministic generator, uniqueness across 100 combinations.
 - [x] T-2-25 Topology model basics, effectiveMtu, canonical order, hash vectors and freeze.
+- [x] T-2-26 Static route validation rules.
+
 
 
 **Exit criteria:** same-subnet and gateway scenarios produce correct decisions with correct explanations; validation catches all listed errors; tests pass.

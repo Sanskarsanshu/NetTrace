@@ -309,6 +309,92 @@ ValidationReport validate(const TopologyDraft& draft, const ValidationOptions& o
                     "Default gateway '" + gw.toString() + "' is not on-link via any interface of node '" + node.id.str() + "'");
             }
         }
+
+        // Rule: Static routes validation
+        std::vector<StaticRoute> seenRoutes;
+        for (size_t rIdx = 0; rIdx < node.staticRoutes.size(); ++rIdx) {
+            const auto& sr = node.staticRoutes[rIdx];
+            std::string routePath = nodePath + "/staticRoutes/" + std::to_string(rIdx);
+
+            // 1. Prefix must not have host bits set (10.5.0.1/16 -> INVALID_ROUTE)
+            if (sr.prefix.address() != sr.prefix.network()) {
+                report.addError("INVALID_ROUTE", routePath + "/prefix",
+                    "Static route prefix '" + sr.prefix.toString() + "' has host bits set; must be a network address");
+            }
+
+            // 2. Needs a nextHop or an outInterface (neither -> INVALID_ROUTE)
+            if (!sr.nextHop.has_value() && !sr.outInterface.has_value()) {
+                report.addError("INVALID_ROUTE", routePath,
+                    "Static route must specify at least a nextHop or an outInterface");
+            }
+
+            // 3. outInterface validation if provided
+            const Interface* outIface = nullptr;
+            if (sr.outInterface.has_value()) {
+                outIface = node.findInterface(*sr.outInterface);
+                if (!outIface) {
+                    report.addError("ROUTE_INTERFACE_NOT_FOUND", routePath + "/outInterface",
+                        "Static route outInterface '" + sr.outInterface->str() + "' does not exist on node '" + node.id.str() + "'");
+                }
+            }
+
+            // 4. nextHop validation if provided
+            if (sr.nextHop.has_value()) {
+                const auto& nh = *sr.nextHop;
+                // Next hop must not equal this node's own interface IP
+                bool equalsOwnIp = false;
+                for (const auto& iface : node.interfaces) {
+                    if (iface.ipv4.has_value() && iface.ipv4->address() == nh) {
+                        equalsOwnIp = true;
+                        break;
+                    }
+                }
+                if (equalsOwnIp) {
+                    report.addError("INVALID_ROUTE", routePath + "/nextHop",
+                        "Static route nextHop '" + nh.toString() + "' equals node's own interface IP");
+                } else if (sr.outInterface.has_value()) {
+                    // Both outInterface and nextHop specified: nextHop must be on-link via THAT interface
+                    if (outIface && outIface->ipv4.has_value()) {
+                        if (!outIface->ipv4->contains(nh) || !outIface->ipv4->isValidHost(nh)) {
+                            report.addError("ROUTE_NEXT_HOP_NOT_ON_LINK", routePath + "/nextHop",
+                                "Static route nextHop '" + nh.toString() + "' is not on-link via interface '" +
+                                outIface->id.str() + "' (" + outIface->ipv4->toString() + ")");
+                        }
+                    } else if (outIface && !outIface->ipv4.has_value()) {
+                        report.addError("ROUTE_NEXT_HOP_NOT_ON_LINK", routePath + "/nextHop",
+                            "Static route outInterface '" + outIface->id.str() + "' has no IPv4 address");
+                    }
+                } else {
+                    // Only nextHop specified: must be on-link via at least one of this node's interfaces
+                    bool foundOnLink = false;
+                    for (const auto& iface : node.interfaces) {
+                        if (iface.ipv4.has_value() && iface.ipv4->contains(nh) && iface.ipv4->isValidHost(nh)) {
+                            foundOnLink = true;
+                            break;
+                        }
+                    }
+                    if (!foundOnLink) {
+                        report.addError("ROUTE_NEXT_HOP_NOT_ON_LINK", routePath + "/nextHop",
+                            "Static route nextHop '" + nh.toString() + "' is not on-link via any interface on node '" + node.id.str() + "'");
+                    }
+                }
+            }
+
+            // 5. Duplicate static route check on the same node (warning)
+            bool isDuplicate = false;
+            for (const auto& prev : seenRoutes) {
+                if (prev == sr) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+            if (isDuplicate) {
+                report.addWarning("DUPLICATE_ROUTE", routePath,
+                    "Duplicate static route '" + sr.prefix.toString() + "' on node '" + node.id.str() + "'");
+            } else {
+                seenRoutes.push_back(sr);
+            }
+        }
     }
 
     // Links validation

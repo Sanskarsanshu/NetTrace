@@ -46,6 +46,18 @@ This document tracks all networking rules, architectural constraints, and functi
 | T-2-23 | Duplicate service rejection | `engine/tests/test_topology.cpp` | passed |
 | T-2-24 | MAC parser, predicates & generator | `engine/tests/test_mac.cpp` | passed |
 | T-2-25 | Topology snapshot, canonical order & FNV-1a hash | `engine/tests/test_topology.cpp` | passed |
+| T-2-04 | Same-subnet delivery avoids default gateway | `engine/tests/test_forwarding.cpp` | passed |
+| T-2-05 | Off-subnet uses default gateway and keeps destination IP | `engine/tests/test_forwarding.cpp` | passed |
+| T-2-06 | Host with no gateway produces NO_ROUTE | `engine/tests/test_forwarding.cpp` | passed |
+| T-2-07 | LPM table lookup | `engine/tests/test_forwarding.cpp` | passed |
+| T-2-08 | Tie-break determinism and numeric trap | `engine/tests/test_forwarding.cpp` | passed |
+| T-2-09 | Router egress interface and next hop on Fixture S | `engine/tests/test_forwarding.cpp` | passed |
+| T-2-10 | Router local delivery and forwarding disabled | `engine/tests/test_forwarding.cpp` | passed |
+| T-2-11 | Usability fallback for down interfaces/links | `engine/tests/test_forwarding.cpp` | passed |
+| T-2-15 | Structured evidence and address-substitution guard | `engine/tests/test_forwarding.cpp` | passed |
+| T-2-20 | Next-hop resolution with ArpCache | `engine/tests/test_forwarding.cpp` | passed |
+| T-2-22 | Ephemeral port allocator sequence & wrap-around | `engine/tests/test_forwarding.cpp` | passed |
+| T-2-26 | Static route validation rules | `engine/tests/test_forwarding.cpp` | passed |
 
 ---
 
@@ -73,13 +85,19 @@ This document tracks all networking rules, architectural constraints, and functi
 | Memory safety under ASan/UBSan | TASKS M1-18 | `engine/` | T-1-18 | implemented (Linux CI) |
 | IPv4 strict parsing, prefix math & on-link decision | NR §4.2, D-15 | `engine/model/ipv4` | T-2-01, T-2-02, T-2-03, T-2-16 | implemented |
 | MAC address format, predicates & deterministic generator | NR §5.3, D-23 | `engine/model/mac` | T-2-24 | implemented |
-| Same-subnet delivery avoids default gateway | NR §4.2, PROJECT §4.1 | `engine/forwarding/host_decision` | T-2-04 | planned |
-| Gateway must be on directly connected subnet | NR §4.3 | `engine/model/validate` | T-2-06 | planned |
-| Longest Prefix Match (LPM) FIB lookup + tie-breaks | NR §6.2 | `engine/forwarding/fib` | T-2-07, T-2-08 | planned |
+| Same-subnet delivery avoids default gateway | NR §4.2, PROJECT §4.1 | `engine/forwarding/host_decision` | T-2-04 | implemented |
+| Off-subnet uses default gateway & keeps destination IP | NR §4.2, PROJECT §4.1 | `engine/forwarding/host_decision` | T-2-05 | implemented |
+| Gateway must be on directly connected subnet | NR §4.3 | `engine/model/validate` | T-2-06 | implemented |
+| Longest Prefix Match (LPM) FIB lookup + tie-breaks | NR §6.2, D-19, ADR-0030 | `engine/forwarding/fib` | T-2-07, T-2-08 | implemented |
 | Learning switch MAC table (never touches TTL/IP) | NR §5.2, M2-28 | `engine/model/mac_table` | T-2-12 | implemented |
-| Router rewrites L2 MAC frame per outgoing link | NR §5.3, PROJECT §7.6 | `engine/simulation/router` | T-2-09 | planned |
+| Router rewrites L2 MAC frame per outgoing link | NR §5.3, PROJECT §7.6 | `engine/simulation/router` | T-2-09 | implemented |
+| Router local delivery vs forwarding disabled | NR §9.1.8 | `engine/forwarding/router` | T-2-10 | implemented |
+| Usability checks remove down components before LPM | ADR-0030 | `engine/forwarding/fib` | T-2-11 | implemented |
+| Structured educational explanations & substitution guard | PROJECT §11.4, NR §23 | `engine/forwarding/explain` | T-2-15 | implemented |
+| NextHopResolution and ArpCache decision bridge | NR §5.4, D-21 | `engine/forwarding/next_hop` | T-2-20 | implemented |
 | Topology validation (rules 1..12 element-level) | PROJECT §5.4, TASKS M2-12..24 | `engine/model/validate` | T-2-13 | implemented |
 | Topology model, canonical order & FNV-1a hash | TASKS M2-08..11, ADR-0027 | `engine/model/topology` | T-2-25 | implemented |
+| Static route validation (INVALID_ROUTE, ROUTE_NEXT_HOP_NOT_ON_LINK) | TASKS M2-32 | `engine/model/validate` | T-2-26 | implemented |
 | IPv4 TTL decrement order (receive 1 -> drop; else dec) | NR §9.1 | `engine/simulation/router` | T-3-01, T-3-02 | planned |
 | Router-addressed packet not decremented | NR §9.1.8 | `engine/simulation/router` | T-3-03 | planned |
 | ICMP Time Exceeded is separate packet & route | NR §9.4, PROJECT §7.4 | `engine/packet/icmp` | T-3-04, T-3-05 | planned |
@@ -110,7 +128,7 @@ This document tracks all networking rules, architectural constraints, and functi
 | ARP-11: Unmodeled ARP features labeled in UI | NR §5.4, D-21 | `engine/simulation/arp` | M3-44 / UI | planned |
 | Transport: Port range 1..65535 validation | NR §8.4, D-22 | `engine/model/topology` | T-2-21 | implemented |
 | Transport: Host services list & validation | NR §8.4, D-22 | `engine/model/validate` | T-2-23 | implemented |
-| Transport: Deterministic ephemeral allocator | NR §8.4, D-22 | `engine/simulation/transport` | T-2-22 | planned |
+| Transport: Deterministic ephemeral allocator | NR §8.4, D-22 | `engine/simulation/transport` | T-2-22 | implemented |
 | Transport: Demux listener -> APPLICATION_ACCEPTED | NR §8.4, D-22 | `engine/simulation/host` | T-3-22 | planned |
 | Transport: UDP closed port -> ICMP Port Unreachable | NR §8.4, D-22 | `engine/simulation/host` | T-3-23 | planned |
 | Transport: TCP closed port -> PORT_CLOSED drop | NR §8.4, D-22 | `engine/simulation/host` | T-3-24 | planned |

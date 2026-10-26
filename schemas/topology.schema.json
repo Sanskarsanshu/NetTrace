@@ -54,6 +54,20 @@
               }
             }
           },
+          "staticRoutes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["prefix"],
+              "properties": {
+                "prefix": { "type": "string" },
+                "nextHop": { "type": ["string", "null"] },
+                "outInterface": { "type": ["string", "null"] },
+                "adminPreference": { "type": "integer", "minimum": 0 },
+                "metric": { "type": "integer", "minimum": 0 }
+              }
+            }
+          },
           "interfaces": {
             "type": "array",
             "items": {

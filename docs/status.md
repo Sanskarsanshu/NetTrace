@@ -1,6 +1,6 @@
 # NetTrace 3D — Feature Status Board
 
-**Last Updated:** Milestone 2 Progress (30 ctest unit tests passing; T-1-18 verified via Linux ASan/UBSan CI run 40385595609)  
+**Last Updated:** Milestone 2 Progress (42 ctest unit tests passing; T-1-18 verified via Linux ASan/UBSan CI run 40385595609)  
 **Status Legend:**
 - `implemented`: Code complete, tested, documented, and verified.
 - `partial`: Works for a documented subset.
@@ -24,8 +24,9 @@
 | Per-Node ARP Cache | implemented | M2-H (ArpCache lookup, insert, update, source tag learned/preloaded; T-2-19) |
 | IPv4 Subnetting & CIDR Calculation | implemented | M2-A (Strict parsing, canonical formatting, prefix math, usableHostRange, D-15 host validity; T-2-01..T-2-03, T-2-16) |
 | MAC Addressing & Generator | implemented | M2-A (Colon-separated, predicates, deterministic generator D-23; T-2-24) |
-| Local vs. Gateway Subnet Decision | planned | M2-E (Host decision; on-link direct send vs gateway send) |
-| Longest Prefix Match (LPM) FIB Lookup | planned | M2-E (FIB LPM with D-19 hierarchical tie-breaking) |
+| Local vs. Gateway Subnet Decision | implemented | M2-E (Host decision; on-link direct send vs gateway send; T-2-04..T-2-06) |
+| Longest Prefix Match (LPM) FIB Lookup | implemented | M2-E (FIB LPM with D-19 numeric tie-breaking, usability filter, explanations; T-2-07..T-2-11, T-2-15, T-2-20, T-2-22, T-2-26) |
+
 | ARP Neighbor Resolution | planned | M3 (Modeled ARP simulation with packet queues; abstracted mode supported) |
 | Transport Layer & UDP Demux | planned | M3 (Ports 1..65535, host services, ICMP Port Unreachable on closed port) |
 | Packet Lifecycle & State Machine | planned | M3 (Event priority queue, deterministic scheduling) |
