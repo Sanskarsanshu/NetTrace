@@ -25,7 +25,7 @@ This document tracks all networking rules, architectural constraints, and functi
 | T-1-15 | BFS hop optimality property | `engine/tests/test_graph.cpp` | passed |
 | T-1-16 | Widest-path bottleneck optimality property | `engine/tests/test_graph.cpp` | passed |
 | T-1-17 | Graph validation rejects malformed graphs | `engine/tests/test_graph.cpp` | passed |
-| T-1-18 | Memory safety under ASan and UBSan | `engine/` | pending: Linux CI |
+| T-1-18 | Memory safety under ASan and UBSan | `engine/` | passed (Linux CI) |
 
 ---
 
@@ -50,7 +50,7 @@ This document tracks all networking rules, architectural constraints, and functi
 | Property: BFS hop count optimality | TASKS M1-15 | `engine/routing/bfs` | T-1-15 | implemented |
 | Property: Widest-path bottleneck optimality | TASKS M1-16 | `engine/routing/widest` | T-1-16 | implemented |
 | Graph validation rejects malformed graphs | TASKS M1-17 | `engine/routing/graph` | T-1-17 | implemented |
-| Memory safety under ASan/UBSan | TASKS M1-18 | `engine/` | T-1-18 | pending: runs on Linux CI |
+| Memory safety under ASan/UBSan | TASKS M1-18 | `engine/` | T-1-18 | implemented (Linux CI) |
 | IPv4 strict parsing, prefix math & on-link decision | NR §4.2, D-15 | `engine/model/ipv4` | T-2-01, T-2-02, T-2-03, T-2-16 | implemented |
 | MAC address format, predicates & deterministic generator | NR §5.3, D-23 | `engine/model/mac` | T-2-24 | implemented |
 | Same-subnet delivery avoids default gateway | NR §4.2, PROJECT §4.1 | `engine/forwarding/host_decision` | T-2-04 | planned |

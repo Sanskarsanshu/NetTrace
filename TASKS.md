@@ -170,7 +170,7 @@ These resolve inconsistencies between the three documents. Record each as a shor
 - [x] T-1-15 Property test: BFS length ≤ any other path's edge count.
 - [x] T-1-16 Property test: widest-path bottleneck ≥ bottleneck of every other simple path (small graphs, brute force).
 - [x] T-1-17 Malformed graph (dangling edge, duplicate ID, bad probability) is rejected, not crashed.
-- [ ] T-1-18 Run under ASan/UBSan: clean (pending: runs on Linux CI; MinGW GCC lacks libasan).
+- [x] T-1-18 Run under ASan/UBSan: clean (verified on Linux CI).
 
 ### M1-G Optional (only after the above pass)
 - [ ] M1-26 Minimal JSON I/O for a graph + request (`nlohmann/json`) and a tiny CLI `nettrace_cli route --in file.json` printing one JSON result. (Full contract is M4.)
