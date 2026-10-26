@@ -7,7 +7,7 @@
   "properties": {
     "schemaVersion": {
       "type": "string",
-      "enum": ["1.0"]
+      "enum": ["1.0", "1.0.0"]
     },
     "id": {
       "type": "string"
@@ -22,12 +22,13 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "name", "type", "active", "interfaces"],
+        "required": ["id", "name", "type", "interfaces"],
         "properties": {
           "id": { "type": "string" },
           "name": { "type": "string" },
           "type": { "type": "string", "enum": ["host", "router", "switch", "cloudEndpoint"] },
           "active": { "type": "boolean" },
+          "adminState": { "type": "string", "enum": ["up", "down"] },
           "simulated": { "type": "boolean" },
           "defaultGateway": { "type": ["string", "null"] },
           "forwardingEnabled": { "type": "boolean" },
@@ -41,18 +42,32 @@
               "z": { "type": "number" }
             }
           },
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["protocol", "port"],
+              "properties": {
+                "protocol": { "type": "string", "enum": ["UDP", "TCP"] },
+                "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+                "label": { "type": "string" }
+              }
+            }
+          },
           "interfaces": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": ["id", "name", "active"],
+              "required": ["id", "name"],
               "properties": {
                 "id": { "type": "string" },
                 "name": { "type": "string" },
                 "ipv4Address": { "type": ["string", "null"] },
                 "prefixLength": { "type": ["integer", "null"], "minimum": 0, "maximum": 32 },
+                "mac": { "type": ["string", "null"] },
                 "macAddress": { "type": ["string", "null"] },
                 "active": { "type": "boolean" },
+                "adminState": { "type": "string", "enum": ["up", "down"] },
                 "mtuBytes": { "type": "integer", "minimum": 68, "maximum": 65535 }
               }
             }

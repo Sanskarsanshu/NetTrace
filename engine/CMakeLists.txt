@@ -26,6 +26,8 @@ add_library(nettrace_core STATIC
     src/model/error.cpp
     src/model/ipv4.cpp
     src/model/mac.cpp
+    src/model/topology.cpp
+    src/model/validate.cpp
     src/routing/graph.cpp
     src/routing/dijkstra.cpp
     src/routing/bfs.cpp
@@ -50,6 +52,7 @@ add_executable(nettrace_tests
     tests/test_property.cpp
     tests/test_ipv4.cpp
     tests/test_mac.cpp
+    tests/test_topology.cpp
 )
 
 target_include_directories(nettrace_tests PRIVATE
@@ -84,3 +87,9 @@ add_test(NAME T-2-02 COMMAND nettrace_tests "T-2-02")
 add_test(NAME T-2-03 COMMAND nettrace_tests "T-2-03")
 add_test(NAME T-2-16 COMMAND nettrace_tests "T-2-16")
 add_test(NAME T-2-24 COMMAND nettrace_tests "T-2-24")
+add_test(NAME T-2-13 COMMAND nettrace_tests "T-2-13")
+add_test(NAME T-2-17 COMMAND nettrace_tests "T-2-17")
+add_test(NAME T-2-21 COMMAND nettrace_tests "T-2-21")
+add_test(NAME T-2-23 COMMAND nettrace_tests "T-2-23")
+add_test(NAME T-2-25 COMMAND nettrace_tests "T-2-25")
+

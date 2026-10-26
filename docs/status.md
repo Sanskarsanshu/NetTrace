@@ -16,7 +16,7 @@
 | BFS Minimum-Hop Algorithm | implemented | M1 (Fewest hops, stable neighbor order, post-reconstructed cost) |
 | Bellman-Ford Negative-Weight Algorithm | implemented | M1 (Negative weights, reachable negative cycle detection, 2-cycle warning) |
 | Widest-Path Bottleneck Bandwidth Algorithm | implemented | M1 (Max-heap bottleneck bandwidth, tie-breaking) |
-| Topology Data Model & Graph Builder | planned | M2 |
+| Topology Data Model & Element Validation | implemented | M2-B (TopologyDraft, TopologySnapshot, FNV-1a hash, element validation rules 1..12; T-2-13, T-2-17, T-2-21, T-2-23, T-2-25) |
 | IPv4 Subnetting & CIDR Calculation | implemented | M2-A (Strict parsing, canonical formatting, prefix math, D-15 host validity) |
 | MAC Addressing & Generator | implemented | M2-A (Colon-separated, predicates, deterministic generator D-23; T-2-24) |
 | Local vs. Gateway Subnet Decision | planned | M2 |

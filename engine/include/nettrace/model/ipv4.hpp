@@ -106,6 +106,11 @@ public:
      */
     std::pair<IPv4Address, IPv4Address> hostRange() const;
 
+    /**
+     * @brief Checks if this subnet overlaps with another subnet.
+     */
+    bool overlaps(const IPv4Subnet& other) const;
+
     std::string toString() const;
 
     /**

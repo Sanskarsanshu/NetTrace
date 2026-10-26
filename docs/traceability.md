@@ -58,7 +58,8 @@ This document tracks all networking rules, architectural constraints, and functi
 | Longest Prefix Match (LPM) FIB lookup + tie-breaks | NR §6.2 | `engine/forwarding/fib` | T-2-07, T-2-08 | planned |
 | Learning switch MAC table (never touches TTL/IP) | NR §5.2 | `engine/simulation/switch` | T-2-12 | planned |
 | Router rewrites L2 MAC frame per outgoing link | NR §5.3, PROJECT §7.6 | `engine/simulation/router` | T-2-09 | planned |
-| Topology validation (IDs, subnets, interfaces) | PROJECT §5.4 | `engine/model/validate` | T-2-13 | planned |
+| Topology validation (rules 1..12 element-level) | PROJECT §5.4, TASKS M2-12..24 | `engine/model/validate` | T-2-13 | implemented |
+| Topology model, canonical order & FNV-1a hash | TASKS M2-08..11, ADR-0027 | `engine/model/topology` | T-2-25 | implemented |
 | IPv4 TTL decrement order (receive 1 -> drop; else dec) | NR §9.1 | `engine/simulation/router` | T-3-01, T-3-02 | planned |
 | Router-addressed packet not decremented | NR §9.1.8 | `engine/simulation/router` | T-3-03 | planned |
 | ICMP Time Exceeded is separate packet & route | NR §9.4, PROJECT §7.4 | `engine/packet/icmp` | T-3-04, T-3-05 | planned |
@@ -87,15 +88,16 @@ This document tracks all networking rules, architectural constraints, and functi
 | ARP-9: ARP frames distinct, parentId, obey link/loss | NR §5.4, D-21 | `engine/simulation/arp` | T-3-16, T-3-25 | planned |
 | ARP-10: Routers ARP on egress segment to destination | NR §5.4, D-21 | `engine/simulation/router` | T-3-17 | planned |
 | ARP-11: Unmodeled ARP features labeled in UI | NR §5.4, D-21 | `engine/simulation/arp` | M3-44 / UI | planned |
-| Transport: Port range 1..65535 validation | NR §8.4, D-22 | `engine/model/transport` | T-2-21 | planned |
-| Transport: Host services list & validation | NR §8.4, D-22 | `engine/model/topology` | T-2-23 | planned |
+| Transport: Port range 1..65535 validation | NR §8.4, D-22 | `engine/model/topology` | T-2-21 | implemented |
+| Transport: Host services list & validation | NR §8.4, D-22 | `engine/model/validate` | T-2-23 | implemented |
 | Transport: Deterministic ephemeral allocator | NR §8.4, D-22 | `engine/simulation/transport` | T-2-22 | planned |
 | Transport: Demux listener -> APPLICATION_ACCEPTED | NR §8.4, D-22 | `engine/simulation/host` | T-3-22 | planned |
 | Transport: UDP closed port -> ICMP Port Unreachable | NR §8.4, D-22 | `engine/simulation/host` | T-3-23 | planned |
 | Transport: TCP closed port -> PORT_CLOSED drop | NR §8.4, D-22 | `engine/simulation/host` | T-3-24 | planned |
 | Transport: ICMP and ARP carry no ports | NR §8.4, D-22 | `engine/packet/` | M3-44 | planned |
-| MAC: Globally unique mock MAC across topology | NR §5.1, D-23 | `engine/model/mac` | T-2-17 | planned |
+| MAC: Globally unique mock MAC across topology | NR §5.1, D-23 | `engine/model/validate` | T-2-17 | implemented |
 | MAC: Generator 02:00:NN:NN:II:II determinism | NR §5.1, D-23 | `engine/model/mac` | T-2-24 | implemented |
 | Registry: Scoped domain lookup in AddressRegistry | NR §5.4, D-21 | `engine/model/registry` | T-2-18 | planned |
 | Cache: Per-node ArpCache operations | NR §5.4, D-21 | `engine/model/arp_cache` | T-2-19 | planned |
+
 

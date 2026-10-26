@@ -48,4 +48,33 @@ private:
     std::variant<T, Error> data_;
 };
 
+template <>
+class Result<void> {
+public:
+    Result() : hasError_(false) {}
+    Result(Error error) : hasError_(true), error_(std::move(error)) {}
+
+    bool isOk() const { return !hasError_; }
+    bool isErr() const { return hasError_; }
+    explicit operator bool() const { return isOk(); }
+
+    const Error& error() const {
+        if (!isErr()) {
+            throw std::runtime_error("Attempted to access error of an Ok Result");
+        }
+        return error_;
+    }
+
+    static Result<void> ok() { return Result<void>(); }
+    static Result<void> err(ErrorCode code, std::string msg, std::string path = "") {
+        return Result<void>(Error(code, std::move(msg), std::move(path)));
+    }
+    static Result<void> err(Error e) { return Result<void>(std::move(e)); }
+
+private:
+    bool hasError_ = false;
+    Error error_;
+};
+
 } // namespace nettrace
+

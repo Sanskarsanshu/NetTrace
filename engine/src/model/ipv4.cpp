@@ -172,6 +172,10 @@ std::pair<IPv4Address, IPv4Address> IPv4Subnet::hostRange() const {
     return {IPv4Address(network().toUint32() + 1u), IPv4Address(broadcast().toUint32() - 1u)};
 }
 
+bool IPv4Subnet::overlaps(const IPv4Subnet& other) const {
+    return contains(other.network()) || other.contains(network());
+}
+
 std::string IPv4Subnet::toString() const {
     return address_.toString() + "/" + std::to_string(prefixLength_);
 }

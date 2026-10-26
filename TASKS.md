@@ -195,26 +195,26 @@ These resolve inconsistencies between the three documents. Record each as a shor
 - [x] M2-07 MAC type: parse/format (canonical lowercase colon-separated), predicates (isBroadcast, isMulticast, isLocallyAdministered, isValidInterfaceMac), deterministic locally-administered generator (`02:00:NN:NN:II:II`), global topology uniqueness per D-23.
 
 ### M2-B Topology model (`model/topology`)
-- [ ] M2-08 `Node` (host, router, switch, cloudEndpoint), `Interface` (id, name, mac, ipv4/prefix, mtu override, adminState), `Link` per D-02, `Topology` with schema version.
-- [ ] M2-09 Host: interfaces, default gateway, static routes (optional), active flag. Router: interfaces, forwarding enabled flag, static routes, processing delay (ms, nullable = not modeled). Switch: ports, MAC table. Cloud: host + `simulated:true`.
-- [ ] M2-10 Link endpoints reference real node+interface; each interface attaches to at most one link; link MTU vs interface MTU rule documented (effective MTU = min of the three).
-- [ ] M2-11 Immutable topology snapshot + content hash for run records.
+- [x] M2-08 `Node` (host, router, switch, cloudEndpoint), `Interface` (id, name, mac, ipv4/prefix, mtu override, adminState), `Link` per D-02, `Topology` with schema version.
+- [x] M2-09 Host: interfaces, default gateway, static routes (optional), active flag. Router: interfaces, forwarding enabled flag, static routes, processing delay (ms, nullable = not modeled). Switch: ports, MAC table. Cloud: host + `simulated:true`.
+- [x] M2-10 Link endpoints reference real node+interface; each interface attaches to at most one link; link MTU vs interface MTU rule documented (effective MTU = min of the three).
+- [x] M2-11 Immutable topology snapshot + content hash for run records.
 
 ### M2-C Topology validation (`model/validate`)
 Each check returns severity (`error` blocks run, `warning` doesn't), a stable code, field path, and a fix hint.
-- [ ] M2-12 Duplicate node/interface/link IDs.
+- [x] M2-12 Duplicate node/interface/link IDs.
 - [ ] M2-13 Duplicate interface IP addresses in the same broadcast domain / globally (choose and document).
-- [ ] M2-14 Invalid IP/CIDR.
-- [ ] M2-15 Link references missing node/interface; interface used by two links.
+- [x] M2-14 Invalid IP/CIDR.
+- [x] M2-15 Link references missing node/interface; interface used by two links.
 - [ ] M2-16 Interface/link subnet mismatch (two routed interfaces on one link in different subnets) → warning/error per rule.
-- [ ] M2-17 Default gateway not on-link via a host interface (`GATEWAY_UNREACHABLE`).
+- [x] M2-17 Default gateway not on-link via a host interface (`GATEWAY_UNREACHABLE`).
 - [ ] M2-18 Missing default gateway for a remote destination (checked at run time per request).
-- [ ] M2-19 Negative cost where unsupported; invalid bandwidth/delay/loss/MTU.
+- [x] M2-19 Negative cost where unsupported; invalid bandwidth/delay/loss/MTU.
 - [ ] M2-20 Inactive source/destination/interface/router/link.
 - [ ] M2-21 No route to destination (reported as `NO_ROUTE`, distinct from forwarding-time failure).
 - [ ] M2-22 Disconnected topology (warning).
 - [ ] M2-23 L2 loop detected among switches (warning: STP not modeled).
-- [ ] M2-24 Empty topology; limits exceeded (`LIMIT_EXCEEDED`).
+- [x] M2-24 Empty topology; limits exceeded (`LIMIT_EXCEEDED`).
 - [ ] M2-25 Unusual-but-legal configs produce **warnings**, blocking ones produce **errors**.
 
 ### M2-D Layer-2 domains and switch
@@ -245,13 +245,13 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [ ] M2-44 Every example validates clean (or with documented expected warnings) and is shared by C++/backend/frontend tests.
 
 ### M2-H ARP & Transport Additions
-- [ ] M2-45 Interface MAC required and globally unique (validation `DUPLICATE_MAC`); auto-generate when absent; persist on export.
+- [x] M2-45 Interface MAC required and globally unique (validation `DUPLICATE_MAC`); auto-generate when absent; persist on export.
 - [ ] M2-46 AddressRegistry (read-only, built from topology snapshot); findOwnerInDomain(ip, domainId). Duplicate IP in one broadcast domain -> error `DUPLICATE_IP_IN_DOMAIN`.
 - [ ] M2-47 ArpCache per node: lookup/insert/update, source tag, no timers.
 - [ ] M2-48 NextHopResolution decision: nextHopIp, needsArp, cacheHit, explanation built from structured fields.
 - [ ] M2-49 Abstracted resolver: registry lookup scoped to the sender's domain.
-- [ ] M2-50 TransportHeader struct and port validation (1..65535).
-- [ ] M2-51 Host services list in the topology model and validation (duplicate protocol+port on one host -> error).
+- [x] M2-50 TransportHeader struct and port validation (1..65535).
+- [x] M2-51 Host services list in the topology model and validation (duplicate protocol+port on one host -> error).
 - [ ] M2-52 Deterministic ephemeral-port allocator (49152..65535, wraps).
 
 ### M2-I Tests
@@ -267,18 +267,20 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [ ] T-2-10 Router recognizes packet addressed to itself as local.
 - [ ] T-2-11 Down interface/link makes a route unusable.
 - [ ] T-2-12 Switch learn/forward/flood/move logic; never flood to ingress; never flood to down ports.
-- [ ] T-2-13 Every validation rule M2-12…M2-24 has a failing-fixture test and a passing-fixture test.
+- [x] T-2-13 Every validation rule M2-12…M2-24 has a failing-fixture test and a passing-fixture test.
 - [ ] T-2-14 GraphBuilder aggregates segment metrics correctly (cost sum, delay sum, bandwidth min, MTU min, loss formula).
 - [ ] T-2-15 Explanations contain the real evidence values for each scenario (assert on structured fields, not only strings).
 - [x] T-2-16 Property tests: valid IPv4 round-trips; network(addr, prefix) contains addr; broadcast ≥ network.
-- [ ] T-2-17 MAC unique across the whole topology.
+- [x] T-2-17 MAC unique across the whole topology.
 - [ ] T-2-18 Registry lookup returns the owner inside the domain and NOTHING for an IP in another domain.
 - [ ] T-2-19 ArpCache ops (lookup, insert, update, source tag).
 - [ ] T-2-20 Next-hop IP is the gateway for a remote destination and the destination for an on-link one.
-- [ ] T-2-21 Port validation (0 and 65536 rejected).
+- [x] T-2-21 Port validation (0 and 65536 rejected).
 - [ ] T-2-22 Allocator determinism and wraparound.
-- [ ] T-2-23 Duplicate service rejected.
+- [x] T-2-23 Duplicate service rejected.
 - [x] T-2-24 MAC parse/format canonical lowercase, predicates, deterministic generator, uniqueness across 100 combinations.
+- [x] T-2-25 Topology model basics, effectiveMtu, canonical order, hash vectors and freeze.
+
 
 **Exit criteria:** same-subnet and gateway scenarios produce correct decisions with correct explanations; validation catches all listed errors; tests pass.
 

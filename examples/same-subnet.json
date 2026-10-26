@@ -17,7 +17,7 @@
           "name": "eth0",
           "ipv4Address": "192.168.1.10",
           "prefixLength": 24,
-          "macAddress": "02:00:00:00:01:01",
+          "macAddress": "02:00:00:01:00:01",
           "active": true,
           "mtuBytes": 1500
         }
@@ -35,7 +35,7 @@
           "name": "port1",
           "ipv4Address": null,
           "prefixLength": null,
-          "macAddress": "02:00:00:00:02:01",
+          "macAddress": null,
           "active": true,
           "mtuBytes": 1500
         },
@@ -44,7 +44,7 @@
           "name": "port2",
           "ipv4Address": null,
           "prefixLength": null,
-          "macAddress": "02:00:00:00:02:02",
+          "macAddress": null,
           "active": true,
           "mtuBytes": 1500
         }
@@ -63,7 +63,7 @@
           "name": "eth0",
           "ipv4Address": "192.168.1.20",
           "prefixLength": 24,
-          "macAddress": "02:00:00:00:01:02",
+          "macAddress": "02:00:00:02:00:01",
           "active": true,
           "mtuBytes": 1500
         }
