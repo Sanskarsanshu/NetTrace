@@ -63,6 +63,11 @@ std::string_view errorCodeToString(ErrorCode code) {
         case ErrorCode::DuplicateRoute: return "DUPLICATE_ROUTE";
         case ErrorCode::ForwardingDisabled: return "FORWARDING_DISABLED";
         case ErrorCode::NoRoute: return "NO_ROUTE";
+        case ErrorCode::InvalidJson: return "INVALID_JSON";
+        case ErrorCode::MissingField: return "MISSING_FIELD";
+        case ErrorCode::InvalidFieldType: return "INVALID_FIELD_TYPE";
+        case ErrorCode::InvalidEnumValue: return "INVALID_ENUM_VALUE";
+        case ErrorCode::UnsupportedSchemaVersion: return "UNSUPPORTED_SCHEMA_VERSION";
     }
     return "UNKNOWN_ERROR";
 }

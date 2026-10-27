@@ -1,52 +1,24 @@
 {
   "schemaVersion": "1.0",
-  "id": "same-subnet-example",
-  "name": "Scenario A - Same Subnet Local Delivery",
-  "description": "Two hosts in the 192.168.1.0/24 subnet connected through an Ethernet switch. Demonstrates direct local delivery without IP routing.",
+  "id": "same-subnet",
+  "name": "Scenario A - Same Subnet",
+  "description": "Two hosts on the same subnet connected through an Ethernet switch. Demonstrates direct local delivery without IP routing.",
   "nodes": [
     {
       "id": "host-a",
       "name": "Host A",
       "type": "host",
-      "active": true,
-      "position": { "x": 100, "y": 200, "z": 0 },
+      "adminState": "up",
       "defaultGateway": null,
       "interfaces": [
         {
           "id": "eth0",
           "name": "eth0",
+          "adminState": "up",
           "ipv4Address": "192.168.1.10",
           "prefixLength": 24,
           "macAddress": "02:00:00:01:00:01",
-          "active": true,
-          "mtuBytes": 1500
-        }
-      ]
-    },
-    {
-      "id": "switch-1",
-      "name": "Switch 1",
-      "type": "switch",
-      "active": true,
-      "position": { "x": 300, "y": 200, "z": 0 },
-      "interfaces": [
-        {
-          "id": "port1",
-          "name": "port1",
-          "ipv4Address": null,
-          "prefixLength": null,
-          "macAddress": null,
-          "active": true,
-          "mtuBytes": 1500
-        },
-        {
-          "id": "port2",
-          "name": "port2",
-          "ipv4Address": null,
-          "prefixLength": null,
-          "macAddress": null,
-          "active": true,
-          "mtuBytes": 1500
+          "mtuBytes": null
         }
       ]
     },
@@ -54,46 +26,91 @@
       "id": "host-b",
       "name": "Host B",
       "type": "host",
-      "active": true,
-      "position": { "x": 500, "y": 200, "z": 0 },
+      "adminState": "up",
       "defaultGateway": null,
+      "services": [
+        {
+          "protocol": "UDP",
+          "port": 5000,
+          "label": "echo"
+        }
+      ],
       "interfaces": [
         {
           "id": "eth0",
           "name": "eth0",
+          "adminState": "up",
           "ipv4Address": "192.168.1.20",
           "prefixLength": 24,
           "macAddress": "02:00:00:02:00:01",
-          "active": true,
-          "mtuBytes": 1500
+          "mtuBytes": null
+        }
+      ]
+    },
+    {
+      "id": "sw1",
+      "name": "Switch 1",
+      "type": "switch",
+      "adminState": "up",
+      "defaultGateway": null,
+      "interfaces": [
+        {
+          "id": "p1",
+          "name": "p1",
+          "adminState": "up",
+          "ipv4Address": null,
+          "prefixLength": null,
+          "macAddress": null,
+          "mtuBytes": null
+        },
+        {
+          "id": "p2",
+          "name": "p2",
+          "adminState": "up",
+          "ipv4Address": null,
+          "prefixLength": null,
+          "macAddress": null,
+          "mtuBytes": null
         }
       ]
     }
   ],
   "links": [
     {
-      "id": "link-a-s1",
-      "a": { "nodeId": "host-a", "interfaceId": "eth0" },
-      "b": { "nodeId": "switch-1", "interfaceId": "port1" },
+      "id": "l1",
+      "a": {
+        "nodeId": "host-a",
+        "interfaceId": "eth0"
+      },
+      "b": {
+        "nodeId": "sw1",
+        "interfaceId": "p1"
+      },
       "adminState": "up",
       "directionality": "bidirectional",
-      "cost": 1,
-      "bandwidthBps": 1000000000,
-      "availableBandwidthBps": 1000000000,
-      "propagationDelayMs": 0.5,
+      "cost": 1.0,
+      "bandwidthBps": 100000000,
+      "availableBandwidthBps": null,
+      "propagationDelayMs": 1.0,
       "packetLossProbability": 0.0,
       "mtuBytes": 1500
     },
     {
-      "id": "link-s1-b",
-      "a": { "nodeId": "switch-1", "interfaceId": "port2" },
-      "b": { "nodeId": "host-b", "interfaceId": "eth0" },
+      "id": "l2",
+      "a": {
+        "nodeId": "sw1",
+        "interfaceId": "p2"
+      },
+      "b": {
+        "nodeId": "host-b",
+        "interfaceId": "eth0"
+      },
       "adminState": "up",
       "directionality": "bidirectional",
-      "cost": 1,
-      "bandwidthBps": 1000000000,
-      "availableBandwidthBps": 1000000000,
-      "propagationDelayMs": 0.5,
+      "cost": 1.0,
+      "bandwidthBps": 100000000,
+      "availableBandwidthBps": null,
+      "propagationDelayMs": 1.0,
       "packetLossProbability": 0.0,
       "mtuBytes": 1500
     }

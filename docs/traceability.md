@@ -63,6 +63,10 @@ This document tracks all networking rules, architectural constraints, and functi
 | T-2-28 | Directed link, inactive components, and exclusions | `engine/tests/test_routing_m2f.cpp` | passed |
 | T-2-29 | GraphBuilder determinism and canonical invariance | `engine/tests/test_routing_m2f.cpp` | passed |
 | T-2-30 | Policy routes bridge and user route override | `engine/tests/test_routing_m2f.cpp` | passed |
+| T-2-31 | Loader error fixtures (every row of TEST_VECTORS.md section 4.10, 2MB & 100000-bracket limits) | `engine/tests/test_loader.cpp` | passed |
+| T-2-32 | JSON round trip and canonical bytes | `engine/tests/test_loader.cpp` | passed |
+| T-2-33 | Starter topologies validation, stability, and scenarios | `engine/tests/test_starter_topologies.cpp` | passed |
+| T-2-34 | Starter topologies schema validation script | `scripts/validate_examples.py` | passed |
 
 ---
 
@@ -146,5 +150,9 @@ This document tracks all networking rules, architectural constraints, and functi
 | MAC: Generator 02:00:NN:NN:II:II determinism | NR §5.1, D-23 | `engine/model/mac` | T-2-24 | implemented |
 | Registry: Scoped domain lookup in AddressRegistry | NR §5.4, D-21 | `engine/model/address_registry` | T-2-18 | implemented |
 | Cache: Per-node ArpCache operations | NR §5.4, D-21 | `engine/model/arp_cache` | T-2-19 | implemented |
+| Topology JSON loading with depth and size limits | D-12, D-16, ADR-0032, ADR-0033 | `engine/model/topology_loader` | T-2-31 | implemented |
+| Canonical JSON exporter & byte-for-byte reproducibility | D-23, ADR-0033 | `engine/model/topology_exporter` | T-2-32 | implemented |
+| Starter topologies scenarios & invariant stability | TEST_VECTORS §4.1..4.9, TASKS M2-40..44 | `examples/`, `engine/tests/test_starter_topologies` | T-2-33 | implemented |
+| Starter topologies schema validation | TASKS M2-44 | `scripts/validate_examples.py` | T-2-34 | implemented |
 
 

@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 # Known CI-only test targets (not registered in standard ctest binary)
-CI_ONLY_TESTS = {"T-1-18"}
+CI_ONLY_TESTS = {"T-1-18", "T-2-34"}
 
 def find_repo_root() -> Path:
     current = Path(__file__).resolve().parent

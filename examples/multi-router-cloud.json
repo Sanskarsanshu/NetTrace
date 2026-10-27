@@ -1,259 +1,305 @@
 {
   "schemaVersion": "1.0",
-  "id": "multi-router-cloud-example",
-  "name": "Scenario C - Multi-Router Path to Cloud Endpoint",
-  "description": "Multi-hop path across multiple routers to a simulated cloud endpoint (Host A -> R1 -> R2 -> R3 -> Cloud Host). Features divergent cost vs. bandwidth paths.",
+  "id": "multi-router-cloud",
+  "name": "Scenario C - Multi-Router Cloud Path",
+  "description": "Multi-hop topology traversing three routers to a simulated cloud endpoint with static routing.",
   "nodes": [
+    {
+      "id": "cloud",
+      "name": "Cloud Endpoint",
+      "type": "cloudEndpoint",
+      "adminState": "up",
+      "defaultGateway": "10.0.35.1",
+      "services": [
+        {
+          "protocol": "UDP",
+          "port": 5000,
+          "label": "echo"
+        }
+      ],
+      "interfaces": [
+        {
+          "id": "eth0",
+          "name": "eth0",
+          "adminState": "up",
+          "ipv4Address": "10.0.35.2",
+          "prefixLength": 30,
+          "macAddress": "02:00:00:05:00:01",
+          "mtuBytes": null
+        }
+      ]
+    },
     {
       "id": "host-a",
       "name": "Host A",
       "type": "host",
-      "active": true,
-      "position": { "x": 100, "y": 250, "z": 0 },
+      "adminState": "up",
       "defaultGateway": "192.168.1.1",
       "interfaces": [
         {
           "id": "eth0",
           "name": "eth0",
+          "adminState": "up",
           "ipv4Address": "192.168.1.10",
           "prefixLength": 24,
           "macAddress": "02:00:00:01:00:01",
-          "active": true,
-          "mtuBytes": 1500
+          "mtuBytes": null
         }
       ]
     },
     {
-      "id": "router-1",
-      "name": "Router R1",
+      "id": "r1",
+      "name": "Router 1",
       "type": "router",
-      "active": true,
-      "position": { "x": 250, "y": 250, "z": 0 },
+      "adminState": "up",
+      "defaultGateway": null,
       "forwardingEnabled": true,
-      "processingDelayMs": 0.5,
+      "staticRoutes": [
+        {
+          "prefix": "10.0.23.0/30",
+          "nextHop": "10.0.12.2",
+          "outInterface": "eth1",
+          "adminPreference": 1,
+          "metric": 0
+        },
+        {
+          "prefix": "10.0.35.0/30",
+          "nextHop": "10.0.12.2",
+          "outInterface": "eth1",
+          "adminPreference": 1,
+          "metric": 0
+        }
+      ],
       "interfaces": [
         {
           "id": "eth0",
           "name": "eth0",
+          "adminState": "up",
           "ipv4Address": "192.168.1.1",
           "prefixLength": 24,
           "macAddress": "02:00:00:02:00:01",
-          "active": true,
-          "mtuBytes": 1500
+          "mtuBytes": null
         },
         {
           "id": "eth1",
           "name": "eth1",
+          "adminState": "up",
           "ipv4Address": "10.0.12.1",
           "prefixLength": 30,
           "macAddress": "02:00:00:02:00:02",
-          "active": true,
-          "mtuBytes": 1500
-        },
-        {
-          "id": "eth2",
-          "name": "eth2",
-          "ipv4Address": "10.0.13.1",
-          "prefixLength": 30,
-          "macAddress": "02:00:00:02:00:03",
-          "active": true,
-          "mtuBytes": 1500
+          "mtuBytes": null
         }
       ]
     },
     {
-      "id": "router-2",
-      "name": "Router R2 (High Bandwidth)",
+      "id": "r2",
+      "name": "Router 2",
       "type": "router",
-      "active": true,
-      "position": { "x": 450, "y": 150, "z": 0 },
+      "adminState": "up",
+      "defaultGateway": null,
       "forwardingEnabled": true,
-      "processingDelayMs": 0.5,
+      "staticRoutes": [
+        {
+          "prefix": "10.0.35.0/30",
+          "nextHop": "10.0.23.2",
+          "outInterface": "eth1",
+          "adminPreference": 1,
+          "metric": 0
+        },
+        {
+          "prefix": "192.168.1.0/24",
+          "nextHop": "10.0.12.1",
+          "outInterface": "eth0",
+          "adminPreference": 1,
+          "metric": 0
+        }
+      ],
       "interfaces": [
         {
           "id": "eth0",
           "name": "eth0",
+          "adminState": "up",
           "ipv4Address": "10.0.12.2",
           "prefixLength": 30,
           "macAddress": "02:00:00:03:00:01",
-          "active": true,
-          "mtuBytes": 1500
+          "mtuBytes": null
         },
         {
           "id": "eth1",
           "name": "eth1",
-          "ipv4Address": "10.0.24.1",
+          "adminState": "up",
+          "ipv4Address": "10.0.23.1",
           "prefixLength": 30,
           "macAddress": "02:00:00:03:00:02",
-          "active": true,
-          "mtuBytes": 1500
+          "mtuBytes": null
         }
       ]
     },
     {
-      "id": "router-3",
-      "name": "Router R3 (Low Cost / Low BW)",
+      "id": "r3",
+      "name": "Router 3",
       "type": "router",
-      "active": true,
-      "position": { "x": 450, "y": 350, "z": 0 },
+      "adminState": "up",
+      "defaultGateway": null,
       "forwardingEnabled": true,
-      "processingDelayMs": 0.5,
+      "staticRoutes": [
+        {
+          "prefix": "10.0.12.0/30",
+          "nextHop": "10.0.23.1",
+          "outInterface": "eth0",
+          "adminPreference": 1,
+          "metric": 0
+        },
+        {
+          "prefix": "192.168.1.0/24",
+          "nextHop": "10.0.23.1",
+          "outInterface": "eth0",
+          "adminPreference": 1,
+          "metric": 0
+        }
+      ],
       "interfaces": [
         {
           "id": "eth0",
           "name": "eth0",
-          "ipv4Address": "10.0.13.2",
+          "adminState": "up",
+          "ipv4Address": "10.0.23.2",
           "prefixLength": 30,
           "macAddress": "02:00:00:04:00:01",
-          "active": true,
-          "mtuBytes": 1500
+          "mtuBytes": null
         },
         {
           "id": "eth1",
           "name": "eth1",
-          "ipv4Address": "10.0.34.1",
+          "adminState": "up",
+          "ipv4Address": "10.0.35.1",
           "prefixLength": 30,
           "macAddress": "02:00:00:04:00:02",
-          "active": true,
-          "mtuBytes": 1500
+          "mtuBytes": null
         }
       ]
     },
     {
-      "id": "router-4",
-      "name": "Router R4 (Gateway to Cloud)",
-      "type": "router",
-      "active": true,
-      "position": { "x": 650, "y": 250, "z": 0 },
-      "forwardingEnabled": true,
-      "processingDelayMs": 0.5,
+      "id": "sw1",
+      "name": "Switch 1",
+      "type": "switch",
+      "adminState": "up",
+      "defaultGateway": null,
       "interfaces": [
         {
-          "id": "eth0",
-          "name": "eth0",
-          "ipv4Address": "10.0.24.2",
-          "prefixLength": 30,
-          "macAddress": "02:00:00:05:00:01",
-          "active": true,
-          "mtuBytes": 1500
+          "id": "p1",
+          "name": "p1",
+          "adminState": "up",
+          "ipv4Address": null,
+          "prefixLength": null,
+          "macAddress": null,
+          "mtuBytes": null
         },
         {
-          "id": "eth1",
-          "name": "eth1",
-          "ipv4Address": "10.0.34.2",
-          "prefixLength": 30,
-          "macAddress": "02:00:00:05:00:02",
-          "active": true,
-          "mtuBytes": 1500
-        },
-        {
-          "id": "eth2",
-          "name": "eth2",
-          "ipv4Address": "172.16.0.1",
-          "prefixLength": 24,
-          "macAddress": "02:00:00:05:00:03",
-          "active": true,
-          "mtuBytes": 1500
-        }
-      ]
-    },
-    {
-      "id": "cloud-server",
-      "name": "Cloud / Simulated EC2 Endpoint",
-      "type": "cloudEndpoint",
-      "active": true,
-      "simulated": true,
-      "position": { "x": 850, "y": 250, "z": 0 },
-      "defaultGateway": "172.16.0.1",
-      "interfaces": [
-        {
-          "id": "eth0",
-          "name": "eth0",
-          "ipv4Address": "172.16.0.50",
-          "prefixLength": 24,
-          "macAddress": "02:00:00:06:00:01",
-          "active": true,
-          "mtuBytes": 1500
+          "id": "p2",
+          "name": "p2",
+          "adminState": "up",
+          "ipv4Address": null,
+          "prefixLength": null,
+          "macAddress": null,
+          "mtuBytes": null
         }
       ]
     }
   ],
   "links": [
     {
-      "id": "link-a-r1",
-      "a": { "nodeId": "host-a", "interfaceId": "eth0" },
-      "b": { "nodeId": "router-1", "interfaceId": "eth0" },
+      "id": "l12",
+      "a": {
+        "nodeId": "r1",
+        "interfaceId": "eth1"
+      },
+      "b": {
+        "nodeId": "r2",
+        "interfaceId": "eth0"
+      },
       "adminState": "up",
       "directionality": "bidirectional",
-      "cost": 1,
-      "bandwidthBps": 1000000000,
-      "availableBandwidthBps": 1000000000,
-      "propagationDelayMs": 1.0,
-      "packetLossProbability": 0.0,
-      "mtuBytes": 1500
-    },
-    {
-      "id": "link-r1-r2",
-      "a": { "nodeId": "router-1", "interfaceId": "eth1" },
-      "b": { "nodeId": "router-2", "interfaceId": "eth0" },
-      "adminState": "up",
-      "directionality": "bidirectional",
-      "cost": 20,
-      "bandwidthBps": 1000000000,
-      "availableBandwidthBps": 1000000000,
+      "cost": 5.0,
+      "bandwidthBps": 100000000,
+      "availableBandwidthBps": null,
       "propagationDelayMs": 5.0,
       "packetLossProbability": 0.0,
       "mtuBytes": 1500
     },
     {
-      "id": "link-r2-r4",
-      "a": { "nodeId": "router-2", "interfaceId": "eth1" },
-      "b": { "nodeId": "router-4", "interfaceId": "eth0" },
+      "id": "l23",
+      "a": {
+        "nodeId": "r2",
+        "interfaceId": "eth1"
+      },
+      "b": {
+        "nodeId": "r3",
+        "interfaceId": "eth0"
+      },
       "adminState": "up",
       "directionality": "bidirectional",
-      "cost": 20,
-      "bandwidthBps": 1000000000,
-      "availableBandwidthBps": 1000000000,
-      "propagationDelayMs": 5.0,
-      "packetLossProbability": 0.0,
+      "cost": 8.0,
+      "bandwidthBps": 50000000,
+      "availableBandwidthBps": null,
+      "propagationDelayMs": 12.0,
+      "packetLossProbability": 0.01,
       "mtuBytes": 1500
     },
     {
-      "id": "link-r1-r3",
-      "a": { "nodeId": "router-1", "interfaceId": "eth2" },
-      "b": { "nodeId": "router-3", "interfaceId": "eth0" },
+      "id": "l3c",
+      "a": {
+        "nodeId": "r3",
+        "interfaceId": "eth1"
+      },
+      "b": {
+        "nodeId": "cloud",
+        "interfaceId": "eth0"
+      },
       "adminState": "up",
       "directionality": "bidirectional",
-      "cost": 5,
-      "bandwidthBps": 10000000,
-      "availableBandwidthBps": 10000000,
-      "propagationDelayMs": 10.0,
-      "packetLossProbability": 0.0,
-      "mtuBytes": 1500
-    },
-    {
-      "id": "link-r3-r4",
-      "a": { "nodeId": "router-3", "interfaceId": "eth1" },
-      "b": { "nodeId": "router-4", "interfaceId": "eth1" },
-      "adminState": "up",
-      "directionality": "bidirectional",
-      "cost": 5,
-      "bandwidthBps": 10000000,
-      "availableBandwidthBps": 10000000,
-      "propagationDelayMs": 10.0,
-      "packetLossProbability": 0.0,
-      "mtuBytes": 1500
-    },
-    {
-      "id": "link-r4-cloud",
-      "a": { "nodeId": "router-4", "interfaceId": "eth2" },
-      "b": { "nodeId": "cloud-server", "interfaceId": "eth0" },
-      "adminState": "up",
-      "directionality": "bidirectional",
-      "cost": 1,
-      "bandwidthBps": 1000000000,
-      "availableBandwidthBps": 1000000000,
+      "cost": 2.0,
+      "bandwidthBps": 100000000,
+      "availableBandwidthBps": null,
       "propagationDelayMs": 2.0,
+      "packetLossProbability": 0.0,
+      "mtuBytes": 1500
+    },
+    {
+      "id": "lA",
+      "a": {
+        "nodeId": "host-a",
+        "interfaceId": "eth0"
+      },
+      "b": {
+        "nodeId": "sw1",
+        "interfaceId": "p1"
+      },
+      "adminState": "up",
+      "directionality": "bidirectional",
+      "cost": 1.0,
+      "bandwidthBps": 1000000000,
+      "availableBandwidthBps": null,
+      "propagationDelayMs": 0.5,
+      "packetLossProbability": 0.0,
+      "mtuBytes": 1500
+    },
+    {
+      "id": "lB",
+      "a": {
+        "nodeId": "sw1",
+        "interfaceId": "p2"
+      },
+      "b": {
+        "nodeId": "r1",
+        "interfaceId": "eth0"
+      },
+      "adminState": "up",
+      "directionality": "bidirectional",
+      "cost": 1.0,
+      "bandwidthBps": 1000000000,
+      "availableBandwidthBps": null,
+      "propagationDelayMs": 0.5,
       "packetLossProbability": 0.0,
       "mtuBytes": 1500
     }

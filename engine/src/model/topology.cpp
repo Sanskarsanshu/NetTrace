@@ -13,7 +13,7 @@ std::string_view nodeTypeToString(NodeType type) {
         case NodeType::Host: return "host";
         case NodeType::Router: return "router";
         case NodeType::Switch: return "switch";
-        case NodeType::CloudEndpoint: return "cloud";
+        case NodeType::CloudEndpoint: return "cloudEndpoint";
     }
     return "host";
 }
@@ -313,6 +313,9 @@ Result<TopologySnapshot> TopologySnapshot::freeze(TopologyDraft draft, const Val
 
     TopologySnapshot snap;
     snap.schemaVersion_ = draft.schemaVersion;
+    snap.id_ = std::move(draft.id);
+    snap.name_ = std::move(draft.name);
+    snap.description_ = std::move(draft.description);
     snap.nodes_ = std::move(draft.nodes);
     snap.links_ = std::move(draft.links);
 

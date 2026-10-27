@@ -43,10 +43,16 @@ add_library(nettrace_core STATIC
     src/forwarding/explain.cpp
     src/routing/graph_builder.cpp
     src/routing/path_bridge.cpp
+    src/model/topology_loader.cpp
+    src/model/topology_exporter.cpp
 )
 
 target_include_directories(nettrace_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_include_directories(nettrace_core SYSTEM PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
 )
 
 # Test executable
@@ -68,6 +74,8 @@ add_executable(nettrace_tests
     tests/test_arp_cache.cpp
     tests/test_forwarding.cpp
     tests/test_routing_m2f.cpp
+    tests/test_loader.cpp
+    tests/test_starter_topologies.cpp
 )
 
 target_include_directories(nettrace_tests PRIVATE
@@ -127,5 +135,8 @@ add_test(NAME T-2-27 COMMAND nettrace_tests "T-2-27")
 add_test(NAME T-2-28 COMMAND nettrace_tests "T-2-28")
 add_test(NAME T-2-29 COMMAND nettrace_tests "T-2-29")
 add_test(NAME T-2-30 COMMAND nettrace_tests "T-2-30")
+add_test(NAME T-2-31 COMMAND nettrace_tests "T-2-31")
+add_test(NAME T-2-32 COMMAND nettrace_tests "T-2-32")
+add_test(NAME T-2-33 COMMAND nettrace_tests "T-2-33")
 
 

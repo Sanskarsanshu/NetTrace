@@ -17,6 +17,16 @@ try {
     $allPassed = $false
 }
 
+# 0b. Starter Topologies Schema Validation (T-2-34)
+Write-Host "`n[0b/4] Validating Example Topologies against Schema..." -ForegroundColor Yellow
+try {
+    python scripts/validate_examples.py
+    Write-Host "Schema Validation: PASS" -ForegroundColor Green
+} catch {
+    Write-Host "Schema Validation: FAIL" -ForegroundColor Red
+    $allPassed = $false
+}
+
 # 1. C++ Engine Tests
 Write-Host "`n[1/4] Running C++ Engine Tests..." -ForegroundColor Yellow
 if (Test-Path "engine/build") {

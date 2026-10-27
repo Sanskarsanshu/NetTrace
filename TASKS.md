@@ -238,11 +238,11 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [x] M2-39 Path→routes converter (D-04): given a planned path, produce `policy` static routes on each router along it; never silently modify user routes; record that it happened.
 
 ### M2-G Starter topologies (`examples/`)
-- [ ] M2-40 `same-subnet.json` (Host A 192.168.1.10/24, Host B 192.168.1.20/24, one switch).
-- [ ] M2-41 `gateway-routing.json` (A 192.168.1.10/24 gw .1 → R1 {192.168.1.1/24, 10.0.0.1/24} → B 10.0.0.20/24).
-- [ ] M2-42 `multi-router-cloud.json` (A → R1 → R2 → R3 → simulated cloud), distinct per-link metrics, with routes configured at every router.
-- [ ] M2-43 Test-only topologies: `ttl-expiry`, `no-route`, `bandwidth-vs-cost`, `mtu-df`, `fragmentation`, `loop`, `lossy`, `link-failover` (two alternate paths).
-- [ ] M2-44 Every example validates clean (or with documented expected warnings) and is shared by C++/backend/frontend tests.
+- [x] M2-40 `same-subnet.json` (Host A 192.168.1.10/24, Host B 192.168.1.20/24, one switch).
+- [x] M2-41 `gateway-routing.json` (A 192.168.1.10/24 gw .1 → R1 {192.168.1.1/24, 10.0.0.1/24} → B 10.0.0.20/24).
+- [x] M2-42 `multi-router-cloud.json` (A → R1 → R2 → R3 → simulated cloud), distinct per-link metrics, with routes configured at every router.
+- [x] M2-43 Test-only topologies: `ttl-expiry`, `no-route`, `bandwidth-vs-cost`, `mtu-df`, `fragmentation`, `loop`, `lossy`, `link-failover` (two alternate paths).
+- [x] M2-44 Every example validates clean (or with documented expected warnings) and is shared by C++/backend/frontend tests.
 
 ### M2-H ARP & Transport Additions
 - [x] M2-45 Interface MAC required and globally unique (validation `DUPLICATE_MAC`); auto-generate when absent; persist on export.
@@ -285,6 +285,10 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [x] T-2-28 Directed links, inactive components, and exclusions.
 - [x] T-2-29 GraphBuilder determinism and canonical invariance across shuffled insertion.
 - [x] T-2-30 Policy routes bridge, ForwardingTable extraRoutes, and user route override detection.
+- [x] T-2-31 Loader error fixtures (every row of TEST_VECTORS.md section 4.10, 2MB & 100000-bracket limits).
+- [x] T-2-32 JSON round trip and canonical bytes (freeze->toJson->load->freeze contentHash match, committed bytes match).
+- [x] T-2-33 Starter topologies validation, stability, and scenarios (TEST_VECTORS.md 4.1-4.9).
+- [x] T-2-34 Starter topologies JSON schema validation script (validate_examples.py against topology.schema.json).
 
 
 

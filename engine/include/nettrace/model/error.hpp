@@ -66,7 +66,12 @@ enum class ErrorCode {
     RouteInterfaceNotFound,
     DuplicateRoute,
     ForwardingDisabled,
-    NoRoute
+    NoRoute,
+    InvalidJson,
+    MissingField,
+    InvalidFieldType,
+    InvalidEnumValue,
+    UnsupportedSchemaVersion
 };
 
 std::string_view errorCodeToString(ErrorCode code);

@@ -64,7 +64,7 @@
                 "nextHop": { "type": ["string", "null"] },
                 "outInterface": { "type": ["string", "null"] },
                 "adminPreference": { "type": "integer", "minimum": 0 },
-                "metric": { "type": "integer", "minimum": 0 }
+                "metric": { "type": "number", "minimum": 0 }
               }
             }
           },
@@ -76,13 +76,14 @@
               "properties": {
                 "id": { "type": "string" },
                 "name": { "type": "string" },
+                "ipv4": { "type": ["string", "null"] },
                 "ipv4Address": { "type": ["string", "null"] },
                 "prefixLength": { "type": ["integer", "null"], "minimum": 0, "maximum": 32 },
                 "mac": { "type": ["string", "null"] },
                 "macAddress": { "type": ["string", "null"] },
                 "active": { "type": "boolean" },
                 "adminState": { "type": "string", "enum": ["up", "down"] },
-                "mtuBytes": { "type": "integer", "minimum": 68, "maximum": 65535 }
+                "mtuBytes": { "type": ["integer", "null"], "minimum": 68, "maximum": 65535 }
               }
             }
           }

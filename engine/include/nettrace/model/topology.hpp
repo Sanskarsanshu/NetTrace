@@ -162,6 +162,9 @@ std::string fnv1a64Hex(std::string_view text);
  */
 struct TopologyDraft {
     std::string schemaVersion = "1.0.0";
+    std::string id;
+    std::string name;
+    std::string description;
     std::vector<Node> nodes;
     std::vector<Link> links;
 
@@ -188,6 +191,9 @@ public:
     static Result<TopologySnapshot> freeze(TopologyDraft draft);
 
     const std::string& schemaVersion() const { return schemaVersion_; }
+    const std::string& id() const { return id_; }
+    const std::string& name() const { return name_; }
+    const std::string& description() const { return description_; }
     const std::vector<Node>& nodes() const { return nodes_; }
     const std::vector<Link>& links() const { return links_; }
     const std::string& canonicalText() const { return canonicalText_; }
@@ -200,6 +206,9 @@ public:
     TopologyDraft toDraft() const {
         TopologyDraft d;
         d.schemaVersion = schemaVersion_;
+        d.id = id_;
+        d.name = name_;
+        d.description = description_;
         d.nodes = nodes_;
         d.links = links_;
         return d;
@@ -209,6 +218,9 @@ private:
     TopologySnapshot() = default;
 
     std::string schemaVersion_ = "1.0.0";
+    std::string id_;
+    std::string name_;
+    std::string description_;
     std::vector<Node> nodes_;
     std::vector<Link> links_;
     std::string canonicalText_;

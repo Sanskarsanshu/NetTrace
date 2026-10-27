@@ -36,6 +36,11 @@ jobs:
       - name: Verify Traceability
         run: python3 scripts/check_traceability.py
 
+      - name: Validate Example Topologies (Schema)
+        run: |
+          pip install jsonschema==4.26.0
+          python3 scripts/validate_examples.py
+
       - name: Run CTest under ASan & UBSan
         run: |
           ctest --test-dir engine/build-asan --output-on-failure
@@ -49,6 +54,11 @@ jobs:
 
       - name: Verify Traceability
         run: python scripts/check_traceability.py
+
+      - name: Validate Example Topologies (Schema)
+        run: |
+          pip install jsonschema==4.26.0
+          python scripts/validate_examples.py
 
       - name: Configure CMake
         run: cmake -S engine -B engine/build -DCMAKE_BUILD_TYPE=Release
