@@ -58,6 +58,11 @@ This document tracks all networking rules, architectural constraints, and functi
 | T-2-20 | Next-hop resolution with ArpCache | `engine/tests/test_forwarding.cpp` | passed |
 | T-2-22 | Ephemeral port allocator sequence & wrap-around | `engine/tests/test_forwarding.cpp` | passed |
 | T-2-26 | Static route validation rules | `engine/tests/test_forwarding.cpp` | passed |
+| T-2-14 | Segment metric aggregation across broadcast domains | `engine/tests/test_routing_m2f.cpp` | passed |
+| T-2-27 | Fixture M path metrics, hop counts and algorithms | `engine/tests/test_routing_m2f.cpp` | passed |
+| T-2-28 | Directed link, inactive components, and exclusions | `engine/tests/test_routing_m2f.cpp` | passed |
+| T-2-29 | GraphBuilder determinism and canonical invariance | `engine/tests/test_routing_m2f.cpp` | passed |
+| T-2-30 | Policy routes bridge and user route override | `engine/tests/test_routing_m2f.cpp` | passed |
 
 ---
 
@@ -98,6 +103,10 @@ This document tracks all networking rules, architectural constraints, and functi
 | Topology validation (rules 1..12 element-level) | PROJECT §5.4, TASKS M2-12..24 | `engine/model/validate` | T-2-13 | implemented |
 | Topology model, canonical order & FNV-1a hash | TASKS M2-08..11, ADR-0027 | `engine/model/topology` | T-2-25 | implemented |
 | Static route validation (INVALID_ROUTE, ROUTE_NEXT_HOP_NOT_ON_LINK) | TASKS M2-32 | `engine/model/validate` | T-2-26 | implemented |
+| GraphBuilder L3 graph aggregation & segment metrics | D-17, ADR-0031 | `engine/routing/graph_builder` | T-2-14, T-2-27 | implemented |
+| Directed link and inactive component exclusions | D-17, ADR-0031 | `engine/routing/graph_builder` | T-2-28 | implemented |
+| GraphBuilder canonical determinism | D-17, ADR-0031 | `engine/routing/graph_builder` | T-2-29 | implemented |
+| Policy-derived static routes bridge & override detection | D-04, PROJECT §4.2 | `engine/routing/path_bridge` | T-2-30 | implemented |
 | IPv4 TTL decrement order (receive 1 -> drop; else dec) | NR §9.1 | `engine/simulation/router` | T-3-01, T-3-02 | planned |
 | Router-addressed packet not decremented | NR §9.1.8 | `engine/simulation/router` | T-3-03 | planned |
 | ICMP Time Exceeded is separate packet & route | NR §9.4, PROJECT §7.4 | `engine/packet/icmp` | T-3-04, T-3-05 | planned |

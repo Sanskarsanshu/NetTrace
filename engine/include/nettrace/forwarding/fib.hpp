@@ -70,7 +70,9 @@ public:
     // 1. Connected routes for every active interface with an IPv4 address.
     // 2. Default route 0.0.0.0/0 from host defaultGateway (egress = host interface on-link to gateway).
     // 3. Static routes configured on the node.
-    static ForwardingTable build(const TopologySnapshot& snap, const NodeId& nodeId);
+    // 4. Any extra (e.g. policy) routes passed in.
+    static ForwardingTable build(const TopologySnapshot& snap, const NodeId& nodeId,
+                                 const std::vector<Route>& extraRoutes = {});
 
     // Determines if a route on nodeId is operationally usable according to stateView and snapshot.
     // If unusable, outputs the exact reason code (UNUSABLE_NODE_DOWN, UNUSABLE_INTERFACE_DOWN, UNUSABLE_LINK_DOWN).

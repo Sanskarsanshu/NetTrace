@@ -26,6 +26,10 @@ inline std::string_view routeSourceToString(RouteSource source) {
     return "Unknown";
 }
 
+inline std::ostream& operator<<(std::ostream& os, RouteSource source) {
+    return os << routeSourceToString(source);
+}
+
 // Layer-3 Forwarding Route (M2-29)
 struct Route {
     IPv4Subnet prefix;                       // Destination prefix CIDR

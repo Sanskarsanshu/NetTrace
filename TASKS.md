@@ -234,8 +234,8 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [x] M2-37 **Explanation generator** that builds text from the `Decision` struct (never hard-coded success text). Must cover the example sentences in `PROJECT.md` §11.4 and `NETWORKING_RULES.md` §23.
 
 ### M2-F Graph building and path→FIB bridge
-- [ ] M2-38 `GraphBuilder`: topology → L3 graph per D-17 with correct segment metric aggregation; inactive things excluded and recorded as exclusions with reasons.
-- [ ] M2-39 Path→routes converter (D-04): given a planned path, produce `policy` static routes on each router along it; never silently modify user routes; record that it happened.
+- [x] M2-38 `GraphBuilder`: topology → L3 graph per D-17 with correct segment metric aggregation; inactive things excluded and recorded as exclusions with reasons.
+- [x] M2-39 Path→routes converter (D-04): given a planned path, produce `policy` static routes on each router along it; never silently modify user routes; record that it happened.
 
 ### M2-G Starter topologies (`examples/`)
 - [ ] M2-40 `same-subnet.json` (Host A 192.168.1.10/24, Host B 192.168.1.20/24, one switch).
@@ -268,7 +268,7 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [x] T-2-11 Down interface/link makes a route unusable.
 - [x] T-2-12 Switch learn/forward/flood/move logic; never flood to ingress; never flood to down ports.
 - [x] T-2-13 Every validation rule M2-12…M2-24 has a failing-fixture test and a passing-fixture test.
-- [ ] T-2-14 GraphBuilder aggregates segment metrics correctly (cost sum, delay sum, bandwidth min, MTU min, loss formula).
+- [x] T-2-14 GraphBuilder aggregates segment metrics correctly (cost sum, delay sum, bandwidth min, MTU min, loss formula).
 - [x] T-2-15 Explanations contain the real evidence values for each scenario (assert on structured fields, not only strings).
 - [x] T-2-16 Property tests: valid IPv4 round-trips; network(addr, prefix) contains addr; broadcast ≥ network.
 - [x] T-2-17 MAC unique across the whole topology.
@@ -281,6 +281,10 @@ Each check returns severity (`error` blocks run, `warning` doesn't), a stable co
 - [x] T-2-24 MAC parse/format canonical lowercase, predicates, deterministic generator, uniqueness across 100 combinations.
 - [x] T-2-25 Topology model basics, effectiveMtu, canonical order, hash vectors and freeze.
 - [x] T-2-26 Static route validation rules.
+- [x] T-2-27 Fixture M path metrics, hop counts, and routing algorithms (Dijkstra, BFS, WidestPath).
+- [x] T-2-28 Directed links, inactive components, and exclusions.
+- [x] T-2-29 GraphBuilder determinism and canonical invariance across shuffled insertion.
+- [x] T-2-30 Policy routes bridge, ForwardingTable extraRoutes, and user route override detection.
 
 
 

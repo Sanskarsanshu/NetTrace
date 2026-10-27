@@ -13,7 +13,8 @@ void ForwardingTable::clear() {
     routes_.clear();
 }
 
-ForwardingTable ForwardingTable::build(const TopologySnapshot& snap, const NodeId& nodeId) {
+ForwardingTable ForwardingTable::build(const TopologySnapshot& snap, const NodeId& nodeId,
+                                         const std::vector<Route>& extraRoutes) {
     ForwardingTable table;
     const auto* node = snap.findNode(nodeId);
     if (!node) {
@@ -86,6 +87,11 @@ ForwardingTable ForwardingTable::build(const TopologySnapshot& snap, const NodeI
 
         r.displayId = makeDisplayId(node->name, r);
         table.addRoute(std::move(r));
+    }
+
+    // 4. Extra (policy) routes
+    for (const auto& er : extraRoutes) {
+        table.addRoute(er);
     }
 
     return table;

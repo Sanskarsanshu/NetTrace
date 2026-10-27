@@ -41,6 +41,8 @@ add_library(nettrace_core STATIC
     src/forwarding/forwarding_engine.cpp
     src/forwarding/next_hop.cpp
     src/forwarding/explain.cpp
+    src/routing/graph_builder.cpp
+    src/routing/path_bridge.cpp
 )
 
 target_include_directories(nettrace_core PUBLIC
@@ -65,6 +67,7 @@ add_executable(nettrace_tests
     tests/test_address_registry.cpp
     tests/test_arp_cache.cpp
     tests/test_forwarding.cpp
+    tests/test_routing_m2f.cpp
 )
 
 target_include_directories(nettrace_tests PRIVATE
@@ -119,5 +122,10 @@ add_test(NAME T-2-15 COMMAND nettrace_tests "T-2-15")
 add_test(NAME T-2-20 COMMAND nettrace_tests "T-2-20")
 add_test(NAME T-2-22 COMMAND nettrace_tests "T-2-22")
 add_test(NAME T-2-26 COMMAND nettrace_tests "T-2-26")
+add_test(NAME T-2-14 COMMAND nettrace_tests "T-2-14")
+add_test(NAME T-2-27 COMMAND nettrace_tests "T-2-27")
+add_test(NAME T-2-28 COMMAND nettrace_tests "T-2-28")
+add_test(NAME T-2-29 COMMAND nettrace_tests "T-2-29")
+add_test(NAME T-2-30 COMMAND nettrace_tests "T-2-30")
 
 
