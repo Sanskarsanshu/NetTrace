@@ -25,27 +25,27 @@ inline RouteResult widestPath(const Graph& g, const NodeId& src, const NodeId& d
 }
 
 // -----------------------------------------------------------------------------
-// Helper to construct Fixture A (T-2-14)
-// host1.eth0 (192.168.1.10/24) <-> sw1.p1
-// sw1.p2 <-> host2.eth0 (192.168.1.20/24)
-// Link 1: cost 1.0, delay 1.5, bw 100M, avail 50M, loss 0.1, mtu 1500
-// Link 2: cost 2.0, delay 2.0, bw 50M,  avail 30M, loss 0.2, mtu 1400
+// Helper to construct Fixture A (TEST_VECTORS.md section 2.1)
+// host-a eth0 (192.168.1.10/24) <-> sw1.p1
+// sw1.p2 <-> host-b eth0 (192.168.1.20/24)
+// l1: host-a.eth0 - sw1.p1 : cost 1, bw 100M, avail 80M, delay 1.0, loss 0.1, mtu 1500
+// l2: sw1.p2 - host-b.eth0 : cost 2, bw 50M,  avail 30M, delay 2.5, loss 0.2, mtu 1400
 // Aggregated: cost 3, delay 3.5, bw 50M, avail 30M, loss 0.28, mtu 1400, switches [sw1]
 // -----------------------------------------------------------------------------
 static TopologyDraft makeFixtureA() {
     TopologyDraft d;
 
-    Node h1;
-    h1.id = NodeId("host1");
-    h1.name = "Host 1";
-    h1.type = NodeType::Host;
-    Interface if1;
-    if1.id = InterfaceId("eth0");
-    if1.name = "eth0";
-    if1.mac = MacAddress::parse("00:00:5e:00:53:01").value();
-    if1.ipv4 = IPv4Subnet::parse("192.168.1.10/24").value();
-    h1.interfaces.push_back(if1);
-    d.nodes.push_back(h1);
+    Node ha;
+    ha.id = NodeId("host-a");
+    ha.name = "Host A";
+    ha.type = NodeType::Host;
+    Interface ifA;
+    ifA.id = InterfaceId("eth0");
+    ifA.name = "eth0";
+    ifA.mac = MacAddress::parse("00:00:5e:00:53:01").value();
+    ifA.ipv4 = IPv4Subnet::parse("192.168.1.10/24").value();
+    ha.interfaces.push_back(ifA);
+    d.nodes.push_back(ha);
 
     Node sw1;
     sw1.id = NodeId("sw1");
@@ -61,26 +61,26 @@ static TopologyDraft makeFixtureA() {
     sw1.interfaces.push_back(p2);
     d.nodes.push_back(sw1);
 
-    Node h2;
-    h2.id = NodeId("host2");
-    h2.name = "Host 2";
-    h2.type = NodeType::Host;
-    Interface if2;
-    if2.id = InterfaceId("eth0");
-    if2.name = "eth0";
-    if2.mac = MacAddress::parse("00:00:5e:00:53:02").value();
-    if2.ipv4 = IPv4Subnet::parse("192.168.1.20/24").value();
-    h2.interfaces.push_back(if2);
-    d.nodes.push_back(h2);
+    Node hb;
+    hb.id = NodeId("host-b");
+    hb.name = "Host B";
+    hb.type = NodeType::Host;
+    Interface ifB;
+    ifB.id = InterfaceId("eth0");
+    ifB.name = "eth0";
+    ifB.mac = MacAddress::parse("00:00:5e:00:53:02").value();
+    ifB.ipv4 = IPv4Subnet::parse("192.168.1.20/24").value();
+    hb.interfaces.push_back(ifB);
+    d.nodes.push_back(hb);
 
     Link l1;
     l1.id = LinkId("l1");
-    l1.a = {NodeId("host1"), InterfaceId("eth0")};
+    l1.a = {NodeId("host-a"), InterfaceId("eth0")};
     l1.b = {NodeId("sw1"), InterfaceId("p1")};
     l1.cost = 1.0;
-    l1.propagationDelayMs = 1.5;
+    l1.propagationDelayMs = 1.0;
     l1.bandwidthBps = 100000000;
-    l1.availableBandwidthBps = 50000000;
+    l1.availableBandwidthBps = 80000000;
     l1.packetLossProbability = 0.1;
     l1.mtuBytes = 1500;
     d.links.push_back(l1);
@@ -88,9 +88,9 @@ static TopologyDraft makeFixtureA() {
     Link l2;
     l2.id = LinkId("l2");
     l2.a = {NodeId("sw1"), InterfaceId("p2")};
-    l2.b = {NodeId("host2"), InterfaceId("eth0")};
+    l2.b = {NodeId("host-b"), InterfaceId("eth0")};
     l2.cost = 2.0;
-    l2.propagationDelayMs = 2.0;
+    l2.propagationDelayMs = 2.5;
     l2.bandwidthBps = 50000000;
     l2.availableBandwidthBps = 30000000;
     l2.packetLossProbability = 0.2;
@@ -101,14 +101,16 @@ static TopologyDraft makeFixtureA() {
 }
 
 // -----------------------------------------------------------------------------
-// Helper to construct Fixture M (T-2-27, T-2-28, T-2-30)
-// 5 L3 nodes: host-a, r1, r2, r3, host-b
+// Helper to construct Fixture M (TEST_VECTORS.md section 2.3)
+// 5 L3 nodes: host-a, r1, r2, r3, cloud
+// 1 switch: sw1
 // Links:
-// l_a_r1 : host-a (192.168.1.10/24) <-> r1.eth0 (192.168.1.1/24) : cost 1, delay 1.0, bw 1000M
-// l_r1_r2: r1.eth1 (10.0.12.1/30)   <-> r2.eth0 (10.0.12.2/30)   : cost 1, delay 1.0, bw 500M
-// l_r2_r3: r2.eth1 (10.0.23.1/30)   <-> r3.eth0 (10.0.23.2/30)   : cost 1, delay 1.0, bw 500M
-// l_r1_r3: r1.eth2 (10.0.13.1/30)   <-> r3.eth1 (10.0.13.2/30)   : cost 10, delay 5.0, bw 1000M
-// l_r3_b : r3.eth2 (10.0.35.1/24)   <-> host-b (10.0.35.2/24)    : cost 1, delay 1.0, bw 1000M
+// lA : host-a.eth0 - sw1.p1  : cost 1, bw 100M, delay 1.0, loss 0, mtu 1500
+// lB : sw1.p2 - r1.eth0      : cost 1, bw 100M, delay 1.0, loss 0, mtu 1500
+// l12: r1.eth1 - r2.eth0     : cost 5, bw 100M, delay 1.0, loss 0, mtu 1500
+// l23: r2.eth1 - r3.eth0     : cost 5, bw 100M, delay 1.0, loss 0, mtu 1500
+// l13: r1.eth2 - r3.eth2     : cost 20, bw 100M, delay 1.0, loss 0, mtu 1500
+// l3c: r3.eth1 - cloud.eth0  : cost 2, bw 100M, delay 1.0, loss 0, mtu 1500
 // -----------------------------------------------------------------------------
 static TopologyDraft makeFixtureM() {
     TopologyDraft d;
@@ -126,6 +128,21 @@ static TopologyDraft makeFixtureM() {
     ifA.ipv4 = IPv4Subnet::parse("192.168.1.10/24").value();
     hostA.interfaces.push_back(ifA);
     d.nodes.push_back(hostA);
+
+    // sw1
+    Node sw1;
+    sw1.id = NodeId("sw1");
+    sw1.name = "Switch 1";
+    sw1.type = NodeType::Switch;
+    Interface p1;
+    p1.id = InterfaceId("p1");
+    p1.name = "p1";
+    sw1.interfaces.push_back(p1);
+    Interface p2;
+    p2.id = InterfaceId("p2");
+    p2.name = "p2";
+    sw1.interfaces.push_back(p2);
+    d.nodes.push_back(sw1);
 
     // r1
     Node r1;
@@ -198,93 +215,104 @@ static TopologyDraft makeFixtureM() {
     r3_1.id = InterfaceId("eth1");
     r3_1.name = "eth1";
     r3_1.mac = MacAddress::parse("00:00:5e:00:53:32").value();
-    r3_1.ipv4 = IPv4Subnet::parse("10.0.13.2/30").value();
+    r3_1.ipv4 = IPv4Subnet::parse("10.0.35.1/30").value();
     r3.interfaces.push_back(r3_1);
 
     Interface r3_2;
     r3_2.id = InterfaceId("eth2");
     r3_2.name = "eth2";
     r3_2.mac = MacAddress::parse("00:00:5e:00:53:33").value();
-    r3_2.ipv4 = IPv4Subnet::parse("10.0.35.1/24").value();
+    r3_2.ipv4 = IPv4Subnet::parse("10.0.13.2/30").value();
     r3.interfaces.push_back(r3_2);
 
     d.nodes.push_back(r3);
 
-    // host-b
-    Node hostB;
-    hostB.id = NodeId("host-b");
-    hostB.name = "Host B";
-    hostB.type = NodeType::Host;
-    hostB.defaultGateway = IPv4Address::parse("10.0.35.1").value();
-    Interface ifB;
-    ifB.id = InterfaceId("eth0");
-    ifB.name = "eth0";
-    ifB.mac = MacAddress::parse("00:00:5e:00:53:51").value();
-    ifB.ipv4 = IPv4Subnet::parse("10.0.35.2/24").value();
-    hostB.interfaces.push_back(ifB);
-    d.nodes.push_back(hostB);
+    // cloud (CloudEndpoint)
+    Node cloud;
+    cloud.id = NodeId("cloud");
+    cloud.name = "Cloud Endpoint";
+    cloud.type = NodeType::CloudEndpoint;
+    cloud.defaultGateway = IPv4Address::parse("10.0.35.1").value();
+    Interface ifC;
+    ifC.id = InterfaceId("eth0");
+    ifC.name = "eth0";
+    ifC.mac = MacAddress::parse("00:00:5e:00:53:51").value();
+    ifC.ipv4 = IPv4Subnet::parse("10.0.35.2/30").value();
+    cloud.interfaces.push_back(ifC);
+    d.nodes.push_back(cloud);
 
-    // 5 physical links
-    Link l_a_r1;
-    l_a_r1.id = LinkId("link-a-r1");
-    l_a_r1.a = {NodeId("host-a"), InterfaceId("eth0")};
-    l_a_r1.b = {NodeId("r1"), InterfaceId("eth0")};
-    l_a_r1.cost = 1.0;
-    l_a_r1.propagationDelayMs = 1.0;
-    l_a_r1.bandwidthBps = 1000000000;
-    l_a_r1.packetLossProbability = 0.0;
-    l_a_r1.mtuBytes = 1500;
-    d.links.push_back(l_a_r1);
+    // 6 physical links per TEST_VECTORS.md section 2.3
+    Link lA;
+    lA.id = LinkId("lA");
+    lA.a = {NodeId("host-a"), InterfaceId("eth0")};
+    lA.b = {NodeId("sw1"), InterfaceId("p1")};
+    lA.cost = 1.0;
+    lA.propagationDelayMs = 1.0;
+    lA.bandwidthBps = 100000000;
+    lA.packetLossProbability = 0.0;
+    lA.mtuBytes = 1500;
+    d.links.push_back(lA);
 
-    Link l_r1_r2;
-    l_r1_r2.id = LinkId("link-r1-r2");
-    l_r1_r2.a = {NodeId("r1"), InterfaceId("eth1")};
-    l_r1_r2.b = {NodeId("r2"), InterfaceId("eth0")};
-    l_r1_r2.cost = 1.0;
-    l_r1_r2.propagationDelayMs = 1.0;
-    l_r1_r2.bandwidthBps = 500000000;
-    l_r1_r2.packetLossProbability = 0.0;
-    l_r1_r2.mtuBytes = 1500;
-    d.links.push_back(l_r1_r2);
+    Link lB;
+    lB.id = LinkId("lB");
+    lB.a = {NodeId("sw1"), InterfaceId("p2")};
+    lB.b = {NodeId("r1"), InterfaceId("eth0")};
+    lB.cost = 1.0;
+    lB.propagationDelayMs = 1.0;
+    lB.bandwidthBps = 100000000;
+    lB.packetLossProbability = 0.0;
+    lB.mtuBytes = 1500;
+    d.links.push_back(lB);
 
-    Link l_r2_r3;
-    l_r2_r3.id = LinkId("link-r2-r3");
-    l_r2_r3.a = {NodeId("r2"), InterfaceId("eth1")};
-    l_r2_r3.b = {NodeId("r3"), InterfaceId("eth0")};
-    l_r2_r3.cost = 1.0;
-    l_r2_r3.propagationDelayMs = 1.0;
-    l_r2_r3.bandwidthBps = 500000000;
-    l_r2_r3.packetLossProbability = 0.0;
-    l_r2_r3.mtuBytes = 1500;
-    d.links.push_back(l_r2_r3);
+    Link l12;
+    l12.id = LinkId("l12");
+    l12.a = {NodeId("r1"), InterfaceId("eth1")};
+    l12.b = {NodeId("r2"), InterfaceId("eth0")};
+    l12.cost = 5.0;
+    l12.propagationDelayMs = 1.0;
+    l12.bandwidthBps = 100000000;
+    l12.packetLossProbability = 0.0;
+    l12.mtuBytes = 1500;
+    d.links.push_back(l12);
 
-    Link l_r1_r3;
-    l_r1_r3.id = LinkId("link-r1-r3");
-    l_r1_r3.a = {NodeId("r1"), InterfaceId("eth2")};
-    l_r1_r3.b = {NodeId("r3"), InterfaceId("eth1")};
-    l_r1_r3.cost = 10.0;
-    l_r1_r3.propagationDelayMs = 5.0;
-    l_r1_r3.bandwidthBps = 1000000000;
-    l_r1_r3.packetLossProbability = 0.0;
-    l_r1_r3.mtuBytes = 1500;
-    d.links.push_back(l_r1_r3);
+    Link l23;
+    l23.id = LinkId("l23");
+    l23.a = {NodeId("r2"), InterfaceId("eth1")};
+    l23.b = {NodeId("r3"), InterfaceId("eth0")};
+    l23.cost = 5.0;
+    l23.propagationDelayMs = 1.0;
+    l23.bandwidthBps = 100000000;
+    l23.packetLossProbability = 0.0;
+    l23.mtuBytes = 1500;
+    d.links.push_back(l23);
 
-    Link l_r3_b;
-    l_r3_b.id = LinkId("link-r3-b");
-    l_r3_b.a = {NodeId("r3"), InterfaceId("eth2")};
-    l_r3_b.b = {NodeId("host-b"), InterfaceId("eth0")};
-    l_r3_b.cost = 1.0;
-    l_r3_b.propagationDelayMs = 1.0;
-    l_r3_b.bandwidthBps = 1000000000;
-    l_r3_b.packetLossProbability = 0.0;
-    l_r3_b.mtuBytes = 1500;
-    d.links.push_back(l_r3_b);
+    Link l13;
+    l13.id = LinkId("l13");
+    l13.a = {NodeId("r1"), InterfaceId("eth2")};
+    l13.b = {NodeId("r3"), InterfaceId("eth2")};
+    l13.cost = 20.0;
+    l13.propagationDelayMs = 1.0;
+    l13.bandwidthBps = 100000000;
+    l13.packetLossProbability = 0.0;
+    l13.mtuBytes = 1500;
+    d.links.push_back(l13);
+
+    Link l3c;
+    l3c.id = LinkId("l3c");
+    l3c.a = {NodeId("r3"), InterfaceId("eth1")};
+    l3c.b = {NodeId("cloud"), InterfaceId("eth0")};
+    l3c.cost = 2.0;
+    l3c.propagationDelayMs = 1.0;
+    l3c.bandwidthBps = 100000000;
+    l3c.packetLossProbability = 0.0;
+    l3c.mtuBytes = 1500;
+    d.links.push_back(l3c);
 
     return d;
 }
 
 // -----------------------------------------------------------------------------
-// T-2-14: Fixture A aggregation
+// T-2-14: Fixture A aggregation (TEST_VECTORS.md section 2.1)
 // -----------------------------------------------------------------------------
 TEST_CASE("T-2-14 Fixture A aggregation and variations") {
     // 1. Baseline Fixture A
@@ -292,11 +320,11 @@ TEST_CASE("T-2-14 Fixture A aggregation and variations") {
     auto snap = TopologySnapshot::freeze(draft).value();
     auto l3 = GraphBuilder::build(snap);
 
-    // 2 L3 nodes (host1, host2) and 2 directed arcs (host1->host2, host2->host1)
+    // 2 L3 nodes (host-a, host-b) and 2 directed arcs (host-a->host-b, host-b->host-a)
     REQUIRE_EQ(l3.nodeCount(), 2);
     REQUIRE_EQ(l3.l3Arcs().size(), 2);
 
-    const auto* arcForward = l3.findL3Arc(NodeId("host1"), NodeId("host2"));
+    const auto* arcForward = l3.findL3Arc(NodeId("host-a"), NodeId("host-b"));
     REQUIRE(arcForward != nullptr);
     REQUIRE_EQ(arcForward->cost, 3.0);
     REQUIRE_EQ(arcForward->bandwidthBps, 50000000);
@@ -304,7 +332,7 @@ TEST_CASE("T-2-14 Fixture A aggregation and variations") {
     REQUIRE_EQ(*arcForward->availableBandwidthBps, 30000000);
     REQUIRE_EQ(arcForward->propagationDelayMs, 3.5);
     // loss: 1 - (1 - 0.1)*(1 - 0.2) = 1 - 0.72 = 0.28
-    REQUIRE(std::abs(arcForward->packetLossProbability - 0.28) < 1e-6);
+    REQUIRE(std::abs(arcForward->packetLossProbability - 0.28) < 1e-12);
     REQUIRE_EQ(arcForward->mtuBytes, 1400);
 
     // Underlying link order per direction
@@ -314,7 +342,7 @@ TEST_CASE("T-2-14 Fixture A aggregation and variations") {
     REQUIRE_EQ(arcForward->switchesTraversed.size(), 1);
     REQUIRE_EQ(arcForward->switchesTraversed[0].str(), "sw1");
 
-    const auto* arcReverse = l3.findL3Arc(NodeId("host2"), NodeId("host1"));
+    const auto* arcReverse = l3.findL3Arc(NodeId("host-b"), NodeId("host-a"));
     REQUIRE(arcReverse != nullptr);
     REQUIRE_EQ(arcReverse->underlyingLinkIds.size(), 2);
     REQUIRE_EQ(arcReverse->underlyingLinkIds[0].str(), "l2");
@@ -322,37 +350,37 @@ TEST_CASE("T-2-14 Fixture A aggregation and variations") {
     REQUIRE_EQ(arcReverse->switchesTraversed.size(), 1);
     REQUIRE_EQ(arcReverse->switchesTraversed[0].str(), "sw1");
 
-    // Variation 1: Missing availability on one link -> aggregated availableBandwidth is nullopt
+    // Variation 1: Missing availability on l2 only -> segment availableBandwidth is nullopt
     auto draftVar1 = makeFixtureA();
-    draftVar1.links[0].availableBandwidthBps = std::nullopt;
+    draftVar1.links[1].availableBandwidthBps = std::nullopt;
     auto snapVar1 = TopologySnapshot::freeze(draftVar1).value();
     auto l3Var1 = GraphBuilder::build(snapVar1);
-    const auto* arcVar1 = l3Var1.findL3Arc(NodeId("host1"), NodeId("host2"));
+    const auto* arcVar1 = l3Var1.findL3Arc(NodeId("host-a"), NodeId("host-b"));
     REQUIRE(arcVar1 != nullptr);
     REQUIRE(!arcVar1->availableBandwidthBps.has_value());
 
-    // Variation 2: MTU override 1280 on an interface -> aggregated MTU is 1280
+    // Variation 2: MTU override 1280 on host-b.eth0 interface -> aggregated MTU is 1280
     auto draftVar2 = makeFixtureA();
-    draftVar2.nodes[0].interfaces[0].mtuBytes = 1280;
+    draftVar2.nodes[2].interfaces[0].mtuBytes = 1280;
     auto snapVar2 = TopologySnapshot::freeze(draftVar2).value();
     auto l3Var2 = GraphBuilder::build(snapVar2);
-    const auto* arcVar2 = l3Var2.findL3Arc(NodeId("host1"), NodeId("host2"));
+    const auto* arcVar2 = l3Var2.findL3Arc(NodeId("host-a"), NodeId("host-b"));
     REQUIRE(arcVar2 != nullptr);
     REQUIRE_EQ(arcVar2->mtuBytes, 1280);
 
-    // Variation 3: Three hosts in one domain -> 6 arcs (ordered pairs)
+    // Variation 3: Three hosts in one domain on sw1 (ports p1, p2, p3) -> 6 arcs
     auto draftVar3 = makeFixtureA();
-    Node h3;
-    h3.id = NodeId("host3");
-    h3.name = "Host 3";
-    h3.type = NodeType::Host;
-    Interface if3;
-    if3.id = InterfaceId("eth0");
-    if3.name = "eth0";
-    if3.mac = MacAddress::parse("00:00:5e:00:53:03").value();
-    if3.ipv4 = IPv4Subnet::parse("192.168.1.30/24").value();
-    h3.interfaces.push_back(if3);
-    draftVar3.nodes.push_back(h3);
+    Node hc;
+    hc.id = NodeId("host-c");
+    hc.name = "Host C";
+    hc.type = NodeType::Host;
+    Interface ifC;
+    ifC.id = InterfaceId("eth0");
+    ifC.name = "eth0";
+    ifC.mac = MacAddress::parse("00:00:5e:00:53:03").value();
+    ifC.ipv4 = IPv4Subnet::parse("192.168.1.30/24").value();
+    hc.interfaces.push_back(ifC);
+    draftVar3.nodes.push_back(hc);
 
     Interface p3;
     p3.id = InterfaceId("p3");
@@ -360,9 +388,9 @@ TEST_CASE("T-2-14 Fixture A aggregation and variations") {
     draftVar3.nodes[1].interfaces.push_back(p3); // sw1.p3
 
     Link l3Link;
-    l3Link.id = LinkId("l3Link");
+    l3Link.id = LinkId("l3");
     l3Link.a = {NodeId("sw1"), InterfaceId("p3")};
-    l3Link.b = {NodeId("host3"), InterfaceId("eth0")};
+    l3Link.b = {NodeId("host-c"), InterfaceId("eth0")};
     draftVar3.links.push_back(l3Link);
 
     auto snapVar3 = TopologySnapshot::freeze(draftVar3).value();
@@ -373,101 +401,125 @@ TEST_CASE("T-2-14 Fixture A aggregation and variations") {
 }
 
 // -----------------------------------------------------------------------------
-// T-2-27: Fixture M (Path metrics, hop counts, 5 L3 nodes, 10 arcs)
+// T-2-27: Fixture M (TEST_VECTORS.md section 2.3)
+// Dijkstra, BFS and widest path results with exact paths, totalCost,
+// routerHopCount, linkHopCount, switches, 5 L3 nodes, 10 arcs.
 // -----------------------------------------------------------------------------
 TEST_CASE("T-2-27 Fixture M algorithms and dual hop counts") {
     auto draft = makeFixtureM();
     auto snap = TopologySnapshot::freeze(draft).value();
     auto l3 = GraphBuilder::build(snap);
 
-    // Exactly 5 L3 nodes and 10 arcs
+    // Exactly 5 L3 nodes: {host-a, r1, r2, r3, cloud} and 10 arcs (5 undirected pairs)
     REQUIRE_EQ(l3.nodeCount(), 5);
     REQUIRE_EQ(l3.l3Arcs().size(), 10);
 
-    // 1. Dijkstra from host-a to host-b
-    auto dijRes = dijkstra(l3, NodeId("host-a"), NodeId("host-b"));
+    // 1. Dijkstra from host-a to cloud: [host-a, r1, r2, r3, cloud]
+    // totalCost = 14, routerHops = 3, linkHops = 5, switches = [sw1]
+    auto dijRes = dijkstra(l3, NodeId("host-a"), NodeId("cloud"));
     REQUIRE(dijRes.reachable);
-    // Cheaper cost: host-a -> r1 -> r2 -> r3 -> host-b (cost 1+1+1+1 = 4.0)
-    REQUIRE_EQ(dijRes.totalCost, 4.0);
+    REQUIRE_EQ(dijRes.totalCost, 14.0);
     REQUIRE_EQ(dijRes.pathNodeIds.size(), 5);
     REQUIRE_EQ(dijRes.pathNodeIds[0].str(), "host-a");
     REQUIRE_EQ(dijRes.pathNodeIds[1].str(), "r1");
     REQUIRE_EQ(dijRes.pathNodeIds[2].str(), "r2");
     REQUIRE_EQ(dijRes.pathNodeIds[3].str(), "r3");
-    REQUIRE_EQ(dijRes.pathNodeIds[4].str(), "host-b");
+    REQUIRE_EQ(dijRes.pathNodeIds[4].str(), "cloud");
 
     auto expDij = l3.expandPath(dijRes, snap);
-    REQUIRE_EQ(expDij.routerHopCount, 3); // r1, r2, r3 strictly between host-a and host-b
-    REQUIRE_EQ(expDij.linkHopCount, 4);
-    REQUIRE(expDij.switchesTraversed.empty());
+    REQUIRE_EQ(expDij.routerHopCount, 3); // r1, r2, r3 strictly between source and destination
+    REQUIRE_EQ(expDij.linkHopCount, 5);   // lA, lB, l12, l23, l3c
+    REQUIRE_EQ(expDij.switchesTraversed.size(), 1);
+    REQUIRE_EQ(expDij.switchesTraversed[0].str(), "sw1");
 
-    // 2. BFS from host-a to host-b
-    auto bfsRes = bfs(l3, NodeId("host-a"), NodeId("host-b"));
+    // 2. BFS from host-a to cloud: [host-a, r1, r3, cloud]
+    // totalCost = 24, routerHops = 2, linkHops = 4, switches = [sw1]
+    auto bfsRes = bfs(l3, NodeId("host-a"), NodeId("cloud"));
     REQUIRE(bfsRes.reachable);
-    // Fewest L3 edges: host-a -> r1 -> r3 -> host-b (3 edges, cost 1+10+1 = 12.0)
-    REQUIRE_EQ(bfsRes.totalCost, 12.0);
+    REQUIRE_EQ(bfsRes.totalCost, 24.0);
     REQUIRE_EQ(bfsRes.pathNodeIds.size(), 4);
     REQUIRE_EQ(bfsRes.pathNodeIds[0].str(), "host-a");
     REQUIRE_EQ(bfsRes.pathNodeIds[1].str(), "r1");
     REQUIRE_EQ(bfsRes.pathNodeIds[2].str(), "r3");
-    REQUIRE_EQ(bfsRes.pathNodeIds[3].str(), "host-b");
+    REQUIRE_EQ(bfsRes.pathNodeIds[3].str(), "cloud");
 
     auto expBfs = l3.expandPath(bfsRes, snap);
     REQUIRE_EQ(expBfs.routerHopCount, 2); // r1, r3
-    REQUIRE_EQ(expBfs.linkHopCount, 3);
-    REQUIRE(expBfs.switchesTraversed.empty());
+    REQUIRE_EQ(expBfs.linkHopCount, 4);   // lA, lB, l13, l3c
+    REQUIRE_EQ(expBfs.switchesTraversed.size(), 1);
+    REQUIRE_EQ(expBfs.switchesTraversed[0].str(), "sw1");
 
-    // 3. Widest Path from host-a to host-b
-    auto wideRes = widestPath(l3, NodeId("host-a"), NodeId("host-b"));
+    // 3. Widest Path from host-a to cloud
+    // All bandwidths equal (100M), tie -> lower cost -> host-a, r1, r2, r3, cloud
+    // totalCost = 14, routerHops = 3, linkHops = 5, switches = [sw1]
+    auto wideRes = widestPath(l3, NodeId("host-a"), NodeId("cloud"));
     REQUIRE(wideRes.reachable);
-    // Path through r1-r3 has bottleneck min(1G, 1G, 1G) = 1G
-    // Path through r2 has bottleneck min(1G, 500M, 500M, 1G) = 500M
-    // Widest path maximizes bottleneck -> picks host-a -> r1 -> r3 -> host-b
-    REQUIRE_EQ(wideRes.bottleneckBandwidthBps, 1000000000);
-    REQUIRE_EQ(wideRes.pathNodeIds.size(), 4);
+    REQUIRE_EQ(wideRes.totalCost, 14.0);
+    REQUIRE_EQ(wideRes.pathNodeIds.size(), 5);
+    REQUIRE_EQ(wideRes.pathNodeIds[0].str(), "host-a");
     REQUIRE_EQ(wideRes.pathNodeIds[1].str(), "r1");
-    REQUIRE_EQ(wideRes.pathNodeIds[2].str(), "r3");
+    REQUIRE_EQ(wideRes.pathNodeIds[2].str(), "r2");
+    REQUIRE_EQ(wideRes.pathNodeIds[3].str(), "r3");
+    REQUIRE_EQ(wideRes.pathNodeIds[4].str(), "cloud");
 
     auto expWide = l3.expandPath(wideRes, snap);
-    REQUIRE_EQ(expWide.routerHopCount, 2);
-    REQUIRE_EQ(expWide.linkHopCount, 3);
+    REQUIRE_EQ(expWide.routerHopCount, 3);
+    REQUIRE_EQ(expWide.linkHopCount, 5);
+    REQUIRE_EQ(expWide.switchesTraversed.size(), 1);
+    REQUIRE_EQ(expWide.switchesTraversed[0].str(), "sw1");
 }
 
 // -----------------------------------------------------------------------------
-// T-2-28: Directed link, inactive components, and exclusions
+// T-2-28: Directed link, inactive components, and exclusions (TEST_VECTORS.md 2.1)
 // -----------------------------------------------------------------------------
 TEST_CASE("T-2-28 directed links and exclusions") {
-    // 1. Directed link: link-r1-r2 directed r1 -> r2
-    auto draftDir = makeFixtureM();
-    draftDir.links[1].directionality = Directionality::Directed; // link-r1-r2
+    // 1. Directed link: make l2 directed from sw1 to host-b
+    auto draftDir = makeFixtureA();
+    draftDir.links[1].directionality = Directionality::Directed; // l2 sw1 -> host-b
     auto snapDir = TopologySnapshot::freeze(draftDir).value();
     auto l3Dir = GraphBuilder::build(snapDir);
 
-    // Forward arc exists: r1 -> r2
-    REQUIRE(l3Dir.findL3Arc(NodeId("r1"), NodeId("r2")) != nullptr);
-    // Reverse arc r2 -> r1 must NOT exist
-    REQUIRE(l3Dir.findL3Arc(NodeId("r2"), NodeId("r1")) == nullptr);
+    // Forward arc host-a -> host-b exists
+    REQUIRE(l3Dir.findL3Arc(NodeId("host-a"), NodeId("host-b")) != nullptr);
+    // Reverse arc host-b -> host-a must NOT exist
+    REQUIRE(l3Dir.findL3Arc(NodeId("host-b"), NodeId("host-a")) == nullptr);
 
-    // 2. Inactive components in switched fixture
-    auto draftInact = makeFixtureA();
-    draftInact.nodes[1].adminState = AdminState::Down;      // sw1 Down
-    draftInact.links[1].adminState = AdminState::Down;      // l2 Down
-    draftInact.nodes[0].interfaces[0].adminState = AdminState::Down; // host1.eth0 Down
+    // 2. Set sw1 adminState Down -> 0 arcs; exclusions = exactly [node sw1: INACTIVE_COMPONENT]
+    {
+        auto dSwDown = makeFixtureA();
+        dSwDown.nodes[1].adminState = AdminState::Down; // sw1 Down
+        auto sSwDown = TopologySnapshot::freeze(dSwDown).value();
+        auto l3SwDown = GraphBuilder::build(sSwDown);
+        REQUIRE_EQ(l3SwDown.l3Arcs().size(), 0);
+        REQUIRE_EQ(l3SwDown.exclusions().size(), 1);
+        REQUIRE_EQ(l3SwDown.exclusions()[0], "node:sw1");
+    }
 
-    auto snapInact = TopologySnapshot::freeze(draftInact).value();
-    auto l3Inact = GraphBuilder::build(snapInact);
+    // 3. Set link l2 adminState Down -> 0 arcs; exclusions = exactly [link l2: INACTIVE_COMPONENT]
+    {
+        auto dL2Down = makeFixtureA();
+        dL2Down.links[1].adminState = AdminState::Down; // l2 Down
+        auto sL2Down = TopologySnapshot::freeze(dL2Down).value();
+        auto l3L2Down = GraphBuilder::build(sL2Down);
+        REQUIRE_EQ(l3L2Down.l3Arcs().size(), 0);
+        REQUIRE_EQ(l3L2Down.exclusions().size(), 1);
+        REQUIRE_EQ(l3L2Down.exclusions()[0], "link:l2");
+    }
 
-    const auto& ex = l3Inact.exclusions();
-    REQUIRE(std::find(ex.begin(), ex.end(), "node:sw1") != ex.end());
-    REQUIRE(std::find(ex.begin(), ex.end(), "link:l2") != ex.end());
-    REQUIRE(std::find(ex.begin(), ex.end(), "interface:host1:eth0") != ex.end());
-
-    // No composite arcs generated when sw1 is Down
-    REQUIRE(l3Inact.l3Arcs().empty());
+    // 4. Set interface host-b.eth0 adminState Down -> 0 arcs; exclusions = exactly [interface host-b/eth0: INACTIVE_COMPONENT]
+    {
+        auto dIfDown = makeFixtureA();
+        dIfDown.nodes[2].interfaces[0].adminState = AdminState::Down; // host-b.eth0 Down
+        auto sIfDown = TopologySnapshot::freeze(dIfDown).value();
+        auto l3IfDown = GraphBuilder::build(sIfDown);
+        REQUIRE_EQ(l3IfDown.l3Arcs().size(), 0);
+        REQUIRE_EQ(l3IfDown.exclusions().size(), 1);
+        REQUIRE_EQ(l3IfDown.exclusions()[0], "interface:host-b:eth0");
+    }
 }
 
 // -----------------------------------------------------------------------------
-// T-2-29: Determinism (build twice and shuffled insertion order)
+// T-2-29: Determinism (TEST_VECTORS.md section 2.5)
 // -----------------------------------------------------------------------------
 TEST_CASE("T-2-29 GraphBuilder determinism") {
     auto draft1 = makeFixtureM();
@@ -497,14 +549,15 @@ TEST_CASE("T-2-29 GraphBuilder determinism") {
 }
 
 // -----------------------------------------------------------------------------
-// T-2-30: Policy routes bridge (D-04)
+// T-2-30: Policy routes bridge (TEST_VECTORS.md section 2.4)
+// Destination: cloud, IP 10.0.35.2
 // -----------------------------------------------------------------------------
 TEST_CASE("T-2-30 policy routes and user route override") {
     auto draft = makeFixtureM();
 
-    // User configures a static route on r1: 10.0.35.0/24 via 10.0.13.2 (r3, the BFS path)
-    draft.nodes[1].staticRoutes.push_back({
-        IPv4Subnet::parse("10.0.35.0/24").value(),
+    // User static route on r1: 10.0.35.0/30 via 10.0.13.2 (egress eth2)
+    draft.nodes[2].staticRoutes.push_back({
+        IPv4Subnet::parse("10.0.35.0/30").value(),
         IPv4Address::parse("10.0.13.2").value(), // Next hop is r3 on eth2
         InterfaceId("eth2"),
         1,
@@ -515,36 +568,50 @@ TEST_CASE("T-2-30 policy routes and user route override") {
     const std::string initialHash = snap.contentHash();
     auto l3 = GraphBuilder::build(snap);
 
-    IPv4Address destIp = IPv4Address::parse("10.0.35.2").value(); // Owned by host-b
+    IPv4Address destIp = IPv4Address::parse("10.0.35.2").value(); // Owned by cloud
 
-    // 1. Dijkstra Path: host-a -> r1 -> r2 -> r3 -> host-b (5 nodes -> 4 policy routes)
-    auto dijRes = dijkstra(l3, NodeId("host-a"), NodeId("host-b"));
+    // 1. Dijkstra Path: host-a -> r1 -> r2 -> r3 -> cloud (5 nodes -> exactly 4 policy routes)
+    // host-a: 10.0.35.2/32 via 192.168.1.1, egress eth0
+    // r1    : 10.0.35.2/32 via 10.0.12.2,   egress eth1
+    // r2    : 10.0.35.2/32 via 10.0.23.2,   egress eth1
+    // r3    : 10.0.35.2/32 directly attached (no next hop), egress eth1
+    auto dijRes = dijkstra(l3, NodeId("host-a"), NodeId("cloud"));
     auto polDij = planPolicyRoutes(snap, dijRes, destIp);
     REQUIRE(polDij.success);
     REQUIRE_EQ(polDij.totalPolicyRoutesCount(), 4);
     REQUIRE_EQ(polDij.plannedPath.size(), 5);
 
-    // On r1, policy route chooses r2 (10.0.12.2 on eth1)
     auto r1PolRoutes = polDij.routesForNode(NodeId("r1"));
     REQUIRE_EQ(r1PolRoutes.size(), 1);
     REQUIRE_EQ(r1PolRoutes[0].outInterface.str(), "eth1");
     REQUIRE(r1PolRoutes[0].nextHop.has_value());
     REQUIRE_EQ(r1PolRoutes[0].nextHop->toString(), "10.0.12.2");
 
-    // Overridden user route on r1: the static route via r3 (10.0.13.2 on eth2) is overridden!
+    auto r2PolRoutes = polDij.routesForNode(NodeId("r2"));
+    REQUIRE_EQ(r2PolRoutes.size(), 1);
+    REQUIRE_EQ(r2PolRoutes[0].outInterface.str(), "eth1");
+    REQUIRE(r2PolRoutes[0].nextHop.has_value());
+    REQUIRE_EQ(r2PolRoutes[0].nextHop->toString(), "10.0.23.2");
+
+    auto r3PolRoutes = polDij.routesForNode(NodeId("r3"));
+    REQUIRE_EQ(r3PolRoutes.size(), 1);
+    REQUIRE_EQ(r3PolRoutes[0].outInterface.str(), "eth1");
+    REQUIRE(!r3PolRoutes[0].nextHop.has_value()); // Directly attached
+
+    // Overridden user route on r1: exactly one entry: r1 10.0.35.0/30 via 10.0.13.2
     auto r1OverriddenDij = polDij.overriddenForNode(NodeId("r1"));
     REQUIRE_EQ(r1OverriddenDij.size(), 1);
-    REQUIRE_EQ(r1OverriddenDij[0].prefix.toString(), "10.0.35.0/24");
+    REQUIRE_EQ(r1OverriddenDij[0].prefix.toString(), "10.0.35.0/30");
     REQUIRE_EQ(r1OverriddenDij[0].outInterface.str(), "eth2");
 
-    // Before policy route, r1 lookup for 10.0.35.2 resolves via static route (eth2, 10.0.13.2)
+    // Before policy routes, r1 lookup for 10.0.35.2 resolves via static route (eth2, 10.0.13.2)
     auto tableBefore = ForwardingTable::build(snap, NodeId("r1"));
     auto lkpBefore = tableBefore.lookup(destIp, NodeId("r1"), snap);
     REQUIRE(lkpBefore.has_value());
     REQUIRE_EQ(lkpBefore->outInterface.str(), "eth2");
     REQUIRE_EQ(lkpBefore->nextHop->toString(), "10.0.13.2");
 
-    // After policy route is installed, r1 lookup for 10.0.35.2 changes to policy route (eth1, 10.0.12.2)!
+    // After policy route is installed, r1 lookup for 10.0.35.2 resolves via policy route (eth1, 10.0.12.2)
     auto tableAfter = ForwardingTable::build(snap, NodeId("r1"), r1PolRoutes);
     auto lkpAfter = tableAfter.lookup(destIp, NodeId("r1"), snap);
     REQUIRE(lkpAfter.has_value());
@@ -553,8 +620,11 @@ TEST_CASE("T-2-30 policy routes and user route override") {
     REQUIRE_EQ(lkpAfter->outInterface.str(), "eth1");
     REQUIRE_EQ(lkpAfter->nextHop->toString(), "10.0.12.2");
 
-    // 2. BFS Path: host-a -> r1 -> r3 -> host-b (4 nodes -> 3 policy routes)
-    auto bfsRes = bfs(l3, NodeId("host-a"), NodeId("host-b"));
+    // 2. BFS Path: host-a -> r1 -> r3 -> cloud (4 nodes -> exactly 3 policy routes)
+    // host-a: 10.0.35.2/32 via 192.168.1.1, egress eth0
+    // r1    : 10.0.35.2/32 via 10.0.13.2,   egress eth2
+    // r3    : 10.0.35.2/32 directly attached, egress eth1
+    auto bfsRes = bfs(l3, NodeId("host-a"), NodeId("cloud"));
     auto polBfs = planPolicyRoutes(snap, bfsRes, destIp);
     REQUIRE(polBfs.success);
     REQUIRE_EQ(polBfs.totalPolicyRoutesCount(), 3);
@@ -565,7 +635,7 @@ TEST_CASE("T-2-30 policy routes and user route override") {
     auto r1OverriddenBfs = polBfs.overriddenForNode(NodeId("r1"));
     REQUIRE(r1OverriddenBfs.empty());
 
-    // 3. Snapshot hash is invariant
+    // 3. Topology snapshot hash is invariant
     REQUIRE_EQ(snap.contentHash(), initialHash);
 
     // 4. Error cases
